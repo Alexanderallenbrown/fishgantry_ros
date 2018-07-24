@@ -44,6 +44,7 @@ class PosePublisher():
         self.freq = 0
         self.bias = 0
         self.amp = 0
+        self.heightgoal=0
 
 
         #simulation objects from the rigidfish module
@@ -84,7 +85,7 @@ class PosePublisher():
         #publish transform for fish and one for tail
         br = tf.TransformBroadcaster()
         fishquat = tf.transformations.quaternion_from_euler(0,0,self.fishsim.x[5])#TODO add static pitch angle of fish (also add to sim?)
-        br.sendTransform((self.fishsim.x[3],self.fishsim.x[4],0),fishquat,self.timenow,'/fishsim','/world')
+        br.sendTransform((self.fishsim.x[3],self.fishsim.x[4],self.heightgoal),fishquat,self.timenow,'/fishsim','/world')
 
         tailquat = tf.transformations.quaternion_from_euler(0,0,self.tailsim.x[0])
         br.sendTransform((-3.25*.0254,0,0),tailquat,self.timenow,'/tailsim','/fishsim')
@@ -94,7 +95,7 @@ class PosePublisher():
         fishpose_msg.header.stamp = self.timenow
         fishpose_msg.pose.position.x = self.fishsim.x[3]
         fishpose_msg.pose.position.y = self.fishsim.x[4]
-        fishpose_msg.pose.position.z = 0
+        fishpose_msg.pose.position.z = self.heightgoal
         fishpose_msg.pose.orientation.x = 0
         fishpose_msg.pose.orientation.y = 0
         fishpose_msg.pose.orientation.z = self.fishsim.x[5]
@@ -176,6 +177,7 @@ class PosePublisher():
         self.bias = data.tail_bias
         self.amp = data.tail_amp
         self.enable = data.tail_enable
+        self.heightgoal = data.height_goal
         # if data.buttons[6]==1:
         #     self.tailcontroller.update(1,freqcommand,ampcommand,biascommand)
         # else:

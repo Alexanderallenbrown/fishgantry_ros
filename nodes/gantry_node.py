@@ -41,10 +41,11 @@ class FishGantry():
     self.command.header.stamp = data.header.stamp
     self.command.pose.position.x = data.pose.position.x
     self.command.pose.position.y = data.pose.position.y
+    self.command.pose.position.z = data.pose.position.z
     #print "received: "+str(self.command.pose.position.x)
 
   def loop(self,event):
-    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(13.55*self.command.pose.position.y)+','+str(0)+','+str(0)+','+str(0)+','+"{0:.2f}".format(self.tailcommand)+'\r\n'
+    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(13.55*self.command.pose.position.y)+','+"{0:.2f}".format(self.command.pose.position.z)+','+str(0)+','+str(0)+','+"{0:.2f}".format(self.tailcommand*180/3.14)+'\r\n'
     print "sending: "+serstring
     self.ser.write(serstring)
     line = self.ser.readline()
