@@ -1,0 +1,241 @@
+{
+  "keys": {}, 
+  "groups": {
+    "pluginmanager": {
+      "keys": {
+        "running-plugins": {
+          "type": "repr", 
+          "repr": "{u'rqt_ez_publisher/EzPublisher': [1], u'rqt_plot/Plot': [1]}"
+        }
+      }, 
+      "groups": {
+        "plugin__rqt_moveit__Moveit__1": {
+          "keys": {}, 
+          "groups": {
+            "plugin": {
+              "keys": {
+                "_splitter": {
+                  "type": "repr(QByteArray.hex)", 
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff0000000100000002000000c8000000640100000009010000000200')", 
+                  "pretty-print": "         d     "
+                }, 
+                "splitter_horizontal": {
+                  "type": "repr(QByteArray.hex)", 
+                  "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff0000000100000002000000640000006e0100000009010000000200')", 
+                  "pretty-print": "       d n     "
+                }
+              }, 
+              "groups": {}
+            }
+          }
+        }, 
+        "plugin__rqt_robot_steering__RobotSteering__1": {
+          "keys": {}, 
+          "groups": {
+            "plugin": {
+              "keys": {
+                "topic": {
+                  "type": "repr", 
+                  "repr": "u'/cmd_vel'"
+                }, 
+                "vx_min": {
+                  "type": "repr", 
+                  "repr": "u'-1'"
+                }, 
+                "vw_min": {
+                  "type": "repr", 
+                  "repr": "u'-3'"
+                }, 
+                "vw_max": {
+                  "type": "repr", 
+                  "repr": "u'3'"
+                }, 
+                "vx_max": {
+                  "type": "repr", 
+                  "repr": "u'1'"
+                }
+              }, 
+              "groups": {}
+            }
+          }
+        }, 
+        "plugin__rqt_pose_view__PoseView__1": {
+          "keys": {}, 
+          "groups": {
+            "plugin": {
+              "keys": {
+                "view_matrix": {
+                  "type": "repr", 
+                  "repr": "u'[[0.7986354231834412, 0.2354087084531784, -0.5538641810417175, 0.0], [-0.5998867154121399, 0.2377641350030899, -0.7639399170875549, 0.0], [-0.04814901575446129, 0.9423642754554749, 0.3311053216457367, 0.0], [0.0, -3.0, -17.5, 1.0]]'"
+                }
+              }, 
+              "groups": {}
+            }
+          }
+        }, 
+        "plugin__rqt_plot__Plot__1": {
+          "keys": {}, 
+          "groups": {
+            "dock_widget__DataPlotWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr", 
+                  "repr": "True"
+                }, 
+                "parent": {
+                  "type": "repr", 
+                  "repr": "None"
+                }, 
+                "dock_widget_title": {
+                  "type": "repr", 
+                  "repr": "u'MatPlot'"
+                }
+              }, 
+              "groups": {}
+            }, 
+            "plugin": {
+              "keys": {
+                "autoscroll": {
+                  "type": "repr", 
+                  "repr": "True"
+                }, 
+                "plot_type": {
+                  "type": "repr", 
+                  "repr": "1"
+                }, 
+                "topics": {
+                  "type": "repr", 
+                  "repr": "[u'/fishgantry/robotpose/pose/position/x', u'/fishgantry/robotpose/pose/position/y', u'/gantry/commandpose/pose/position/y', u'/gantry/commandpose/pose/position/x']"
+                }, 
+                "y_limits": {
+                  "type": "repr", 
+                  "repr": "[-10.0, 9.8]"
+                }, 
+                "x_limits": {
+                  "type": "repr", 
+                  "repr": "[140.57459092140198, 141.57459092140198]"
+                }
+              }, 
+              "groups": {}
+            }
+          }
+        }, 
+        "plugin__rqt_publisher__Publisher__1": {
+          "keys": {}, 
+          "groups": {
+            "plugin": {
+              "keys": {
+                "publishers": {
+                  "type": "repr", 
+                  "repr": "u\"[{'type_name': 'geometry_msgs/PoseStamped', 'topic_name': '/move_base_simple/goal', 'enabled': False, 'rate': 1.0, 'expressions': {}, 'publisher_id': 0, 'counter': 42}]\""
+                }
+              }, 
+              "groups": {}
+            }
+          }
+        }, 
+        "plugin__rqt_ez_publisher__EzPublisher__1": {
+          "keys": {}, 
+          "groups": {
+            "dock_widget__EzPublisherPluginUi": {
+              "keys": {
+                "dockable": {
+                  "type": "repr", 
+                  "repr": "True"
+                }, 
+                "parent": {
+                  "type": "repr", 
+                  "repr": "None"
+                }, 
+                "dock_widget_title": {
+                  "type": "repr", 
+                  "repr": "u''"
+                }
+              }, 
+              "groups": {}
+            }, 
+            "plugin": {
+              "keys": {
+                "texts": {
+                  "type": "repr", 
+                  "repr": "[u'/gantry/commandpose/pose/position/x', u'/gantry/commandpose/pose/position/y']"
+                }, 
+                "publish_interval": {
+                  "type": "repr", 
+                  "repr": "100"
+                }, 
+                "configurable": {
+                  "type": "repr", 
+                  "repr": "True"
+                }
+              }, 
+              "groups": {
+                "gantry": {
+                  "keys": {}, 
+                  "groups": {
+                    "commandpose": {
+                      "keys": {}, 
+                      "groups": {
+                        "pose": {
+                          "keys": {}, 
+                          "groups": {
+                            "position": {
+                              "keys": {
+                                "x_is_repeat": {
+                                  "type": "repr", 
+                                  "repr": "True"
+                                }, 
+                                "x_range": {
+                                  "type": "repr", 
+                                  "repr": "(-10.0, 10.0)"
+                                }, 
+                                "y_range": {
+                                  "type": "repr", 
+                                  "repr": "(-10.0, 10.0)"
+                                }, 
+                                "y_is_repeat": {
+                                  "type": "repr", 
+                                  "repr": "True"
+                                }
+                              }, 
+                              "groups": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }, 
+    "mainwindow": {
+      "keys": {
+        "geometry": {
+          "type": "repr(QByteArray.hex)", 
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0002000000000000000000240000054b000002b100000000000000400000054b000002b100000000000000000556')", 
+          "pretty-print": "       $ K     @ K      V"
+        }, 
+        "state": {
+          "type": "repr(QByteArray.hex)", 
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd00000001000000030000054c0000025cfc0100000006fb00000058007200710074005f007000750062006c00690073006800650072005f005f005000750062006c00690073006800650072005f005f0031005f005f005000750062006c006900730068006500720057006900640067006500740100000000000003920000000000000000fb0000006a007200710074005f0072006f0062006f0074005f007300740065006500720069006e0067005f005f0052006f0062006f0074005300740065006500720069006e0067005f005f0031005f005f0052006f0062006f0074005300740065006500720069006e0067005500690100000000000003920000000000000000fb00000064007200710074005f006d006f0076006500690074005f005f004d006f0076006500690074005f005f0031005f005f005f0070006c007500670069006e0063006f006e007400610069006e00650072005f0074006f0070005f0077006900640067006500740100000000000003920000000000000000fb0000006a007200710074005f0065007a005f007000750062006c00690073006800650072005f005f0045007a005000750062006c00690073006800650072005f005f0031005f005f0045007a005000750062006c006900730068006500720050006c007500670069006e005500690100000000000003ce000003ce00fffffffb00000050007200710074005f0070006f00730065005f0076006900650077005f005f0050006f007300650056006900650077005f005f0031005f005f0047004c00560069006500770057006900640067006500740300000059000000a4000004d20000025cfb00000042007200710074005f0070006c006f0074005f005f0050006c006f0074005f005f0031005f005f00440061007400610050006c006f007400570069006400670065007401000003d4000001780000017800ffffff0000054c0000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')", 
+          "pretty-print": "                 Xrqt_publisher__Publisher__1__PublisherWidget          jrqt_robot_steering__RobotSteering__1__RobotSteeringUi          drqt_moveit__Moveit__1___plugincontainer_top_widget          jrqt_ez_publisher__EzPublisher__1__EzPublisherPluginUi          Prqt_pose_view__PoseView__1__GLViewWidget          Brqt_plot__Plot__1__DataPlotWidget                            6MinimizedDockWidgetsToolbar        "
+        }
+      }, 
+      "groups": {
+        "toolbar_areas": {
+          "keys": {
+            "MinimizedDockWidgetsToolbar": {
+              "type": "repr", 
+              "repr": "8"
+            }
+          }, 
+          "groups": {}
+        }
+      }
+    }
+  }
+}
