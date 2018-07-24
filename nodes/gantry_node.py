@@ -17,7 +17,7 @@ class FishGantry():
     self.baud = rospy.get_param('~baud',115200)
     self.ser = serial.Serial(self.port, self.baud,timeout=1) #this initializes the serial object
     self.pub= rospy.Publisher("fishgantry/robotpose",PoseStamped)
-    self.goalpose_sub = rospy.Subscriber("/gantry/commandpose",PoseStamped,self.commandCallback)
+    self.goalpose_sub = rospy.Subscriber("/fishgantry/commandpose",PoseStamped,self.commandCallback)
     
     #initialize a command position
     self.command = PoseStamped()
@@ -41,7 +41,7 @@ class FishGantry():
     #print "received: "+str(self.command.pose.position.x)
 
   def loop(self,event):
-    serstring = '!'+str(self.command.pose.position.x)+','+str(self.command.pose.position.y)+','+str(0)+','+str(0)+','+str(0)+','+str(0)+'\r\n'
+    serstring = '!'+"{0:.2f}".format(10*self.command.pose.position.x)+','+"{0:.2f}".format(10*self.command.pose.position.y)+','+str(0)+','+str(0)+','+str(0)+','+str(0)+'\r\n'
     print "sending: "+serstring
     self.ser.write(serstring)
     line = self.ser.readline()
