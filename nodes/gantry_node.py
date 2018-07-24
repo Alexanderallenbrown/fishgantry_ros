@@ -18,13 +18,14 @@ class FishGantry():
     self.ser = serial.Serial(self.port, self.baud,timeout=1) #this initializes the serial object
     self.pub= rospy.Publisher("fishgantry/robotpose",PoseStamped)
     self.goalpose_sub = rospy.Subscriber("/fishgantry/commandpose",PoseStamped,self.commandCallback)
-    
+    self.tailpose_sub = rospy.Subscriber("/fishgantry/tailpose",PoseStamped,self.tailCallback)
     #initialize a command position
     self.command = PoseStamped()
     self.command.header.stamp = rospy.Time.now()
     self.command.pose.position.x = 0
     self.command.pose.position.y = 0
     self.command.pose.position.z = 0
+    self.tailcommand = 0;
 
     #main loop runs on a timer, which ensures that we get timely updates from the gantry arduino
     rospy.Timer(rospy.Duration(.01),self.loop,oneshot=False) #timer callback (math) allows filter to run at constant time
@@ -34,6 +35,8 @@ class FishGantry():
     # get the file path for rospy_tutorials
     self.package_path=rospack.get_path('fishgantry_ros')
 
+  def tailCallback(self,data):
+    self.tailcommand = data.pose.orientation.z
   def commandCallback(self,data):
     self.command.header.stamp = data.header.stamp
     self.command.pose.position.x = data.pose.position.x
@@ -41,7 +44,7 @@ class FishGantry():
     #print "received: "+str(self.command.pose.position.x)
 
   def loop(self,event):
-    serstring = '!'+"{0:.2f}".format(10*self.command.pose.position.x)+','+"{0:.2f}".format(10*self.command.pose.position.y)+','+str(0)+','+str(0)+','+str(0)+','+str(0)+'\r\n'
+    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(13.55*self.command.pose.position.y)+','+str(0)+','+str(0)+','+str(0)+','+"{0:.2f}".format(self.tailcommand)+'\r\n'
     print "sending: "+serstring
     self.ser.write(serstring)
     line = self.ser.readline()
