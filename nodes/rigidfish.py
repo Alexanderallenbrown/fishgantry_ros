@@ -80,7 +80,7 @@ class TailServo:
 
 
 class RigidFish:
-    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411,fastcoast=True,fastcoast_tau = 1.0):
+    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411,fastcoast=True,fastcoast_tau = 0.2):
         """ 
         RigidFish(S=.01,Cd=.4418,Kd=6.5e-4,Cl=3.41,mb=.311,J=5.08e-4,L=.04,rho=1000.,m=.4909,c=0.07,kf=.918,a=-.0116,b=.411)
         Model adapted from Tan (2013) Chinese Control Conference
@@ -137,11 +137,13 @@ class RigidFish:
         if(self.tailfreq>=self.coast_thresh):
             udot = v*w+fu - c1*alphaddot*sin(alpha)
             vdot = -v*w+fv + c1*alphaddot*cos(alpha)
+            wdot = -c3*w**2*sign(w) - c2*alphaddot*cos(alpha)-c4*m*alphaddot
         else:#if frequency is low, assume the fish 'wants' to stop. Would do so with pectorals, etc. in real life.
             udot = -1.0/self.fastcoast_tau*self.x[0]
             vdot = -1.0/self.fastcoast_tau*self.x[1]
-            print("coasting")
-        wdot = -c3*w**2*sign(w) - c2*alphaddot*cos(alpha)-c4*m*alphaddot
+            wdot = -1.0/self.fastcoast_tau*self.x[2]
+            #print("coasting")
+        
         Xdot = u*cos(psi) - v*sin(psi)
         Ydot = u*sin(psi) + v*cos(psi)
         psidot = w
