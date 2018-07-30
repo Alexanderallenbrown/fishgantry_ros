@@ -183,7 +183,7 @@ def demoOpenLoop():
 
     fish = RigidFish()
 
-    simtime = 20#seconds
+    simtime = 1#seconds
     dT = 0.001 #seconds, timestep for simulation
     t = arange(0,simtime,dT) #time vector
 

@@ -5,19 +5,19 @@ from scipy.optimize import minimize
 import copy
 
 class Fish_Planar_MPC:
-    def __init__(self,Np = 10,dtp = 0.01,q_x_error = 1.0,q_y_error=1.0,q_psi_error = 1.0,q_vel_final_error = 1.0,freqmax=24.0,ampmax = 45*pi/180,biasmax = 45*pi/180):
+    def __init__(self,Np = 100,dtp = 0.01,q_x_error = 1.0,q_y_error=1.0,q_psi_error = 1.0,q_vel_final_error = 1.0,freqmax=24.0,ampmax = 45*pi/180,biasmax = 45*pi/180):
         #number of prediction timesteps used in each optimization
         self.Np = Np
         #prediction timestep
         self.dtp = dtp
         #weight on final location error
-        self.Q_x_error = zeros(self.Np)
+        self.Q_x_error = ones(self.Np)
         self.Q_x_error[-1] = q_x_error
         #weight on final location error
-        self.Q_y_error = zeros(self.Np)
+        self.Q_y_error = ones(self.Np)
         self.Q_y_error[-1] = q_y_error
         #weight on final yaw angle
-        self.Q_psi_error = zeros(self.Np)
+        self.Q_psi_error = ones(self.Np)
         self.Q_psi_error[-1] = q_psi_error
         #weight on final velocity
         self.Q_vel_final_error = zeros(self.Np)
@@ -80,12 +80,83 @@ class Fish_Planar_MPC:
             else:
                 bounds.insert(2,(-self.biasmax,self.biasmax))
         #now we use the minimize function.
-        umpc = minimize(self.ObjectiveFn_targetPose,input_matrix,args=(fishnow,target_pose),bounds=bounds,method='SLSQP')
+        umpc = minimize(self.ObjectiveFn_targetPose,input_matrix,args=(fishnow,target_pose),method='SLSQP')
         #print umpc
         inputs = array([umpc.x])
         inputs_reshaped = inputs.reshape((3,self.Np))
         #print inputs_reshaped[0,:]
         return inputs_reshaped[:,0]#,inputs_reshaped
+
+
+class Fish_EndPoint_MPC:
+    ''' this is like the above class, but it ONLY considers the error at the FINAL TIME'''
+    def __init__(self,Np = 100,dtp = 0.01,q_x_error = 1.0,q_y_error=1.0,q_psi_error = 1.0,q_vel_final_error = 1.0,freqmax=24.0,ampmax = 45*pi/180,biasmax = 45*pi/180):
+        #number of prediction timesteps used in each optimization
+        self.Np = Np
+        #prediction timestep
+        self.dtp = dtp
+        #weight on final location error
+        self.Q_x_error = q_x_error
+        #weight on final location error
+        self.Q_y_error = q_y_error
+        #weight on final yaw angle
+        self.Q_psi_error = q_psi_error
+        #weight on final velocity
+        self.Q_vel_final_error = q_vel_final_error
+
+        self.freqmax = freqmax
+        self.ampmax = ampmax
+        self.biasmax = biasmax
+
+    def predict(self,fishnow, frequency_input, amplitude_input,bias_input):
+        ''' this method takes the current "real" fish state, and predicts its trajectory for an input history given by three vectors of lenght Np.
+        '''
+        predicted_x = zeros(self.Np)
+        predicted_y = zeros(self.Np)
+        predicted_psi = zeros(self.Np)
+
+        predictfish = copy.deepcopy(fishnow)
+
+        xpred = zeros((self.Np,6))
+        for k in range(0,len(xpred)):
+            xpred[k,:] = predictfish.driveFish(self,frequency_input,amplitude_input,bias_input,self.dtp)
+        return xpred
+
+    def ObjectiveFn_targetPose(self,input_matrix,fishnow,target_pose):
+        ''' This method takes a possible input vector [freq,amp,bias], a target pose [x_des,y_des,psi_des,vel_final]
+            and then it returns the objective function value. it uses the predict() method to calculate fish states.
+
+        '''
+
+        #print input_reshaped.shape
+        frequency_input = input_matrix[0]
+        amplitude_input = input_matrix[1]
+        bias_input = input_matrix[2]
+        #create a Npx6 matrix representing simulated fish states
+        xpred = self.predict(fishnow,frequency_input,amplitude_input,bias_input)
+        #now compute objective function
+        J = self.Q_x_error*(xpred[-1,3]-target_pose[0])**2+self.Q_y_error*(xpred[-1,4]-target_pose[1])**2+self.Q_psi_error*(xpred[-1,5]-target_pose[2])**2#+self.Q_vel_final_error[k]*((sqrt(xpred[k,0]**2+xpred[k,1]**2)-target_pose[3])**2)
+        return float(J)
+
+    def calcOptimal(self,fishnow,target_pose):
+        initfreq = self.freqmax
+        initamp = self.ampmax
+        initbias = random.randn(1)
+        input_matrix = array([initfreq,initamp,initbias])
+        #set up constraint on optimization
+        #constraint_obj = ({'type':'ineq','fun':constrain_y})
+        bounds = [(0,self.freqmax)]
+        bounds.insert(0,(0,self.ampmax))
+        bounds.insert(0,(-self.biasmax,self.biasmax))
+        
+        #now we use the minimize function.
+        umpc = minimize(self.ObjectiveFn_targetPose,input_matrix,args=(fishnow,target_pose),bounds=bounds,method='SLSQP')
+        #print umpc
+        inputs = array([umpc.x])
+        #inputs_reshaped = inputs.reshape((3,self.Np))
+        #print inputs_reshaped[0,:]
+        print inputs[0]
+        return list(inputs[0])#,inputs_reshaped
 
 def demo():
     fish = RigidFish()
@@ -97,7 +168,7 @@ def demo():
     input_matrix[:,1] = amp
     input_matrix[:,2] = bias
 
-    fishbrain = Fish_Planar_MPC()
+    fishbrain = Fish_EndPoint_MPC()
 
     target_pose = [0.5,0.5,0.0,0.0]
     # J =fishbrain.ObjectiveFn_targetPose(input_matrix,fish,target_pose)
