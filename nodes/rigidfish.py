@@ -80,7 +80,7 @@ class TailServo:
 
 
 class RigidFish:
-    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411):
+    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411,fastcoast=True,fastcoast_tau = 1.0):
         """ 
         RigidFish(S=.01,Cd=.4418,Kd=6.5e-4,Cl=3.41,mb=.311,J=5.08e-4,L=.04,rho=1000.,m=.4909,c=0.07,kf=.918,a=-.0116,b=.411)
         Model adapted from Tan (2013) Chinese Control Conference
@@ -111,6 +111,15 @@ class RigidFish:
         """
         self.S,self.Cd,self.Kd,self.Cl,self.mb,self.J,self.L,self.rho,self.m,self.c,self.kf,self.a,self.b=S,Cd,Kd,Cl,mb,J,L,rho,m,c,kf,a,b
         self.x = array([0.,0.,0.,0.,0.,0.])
+        self.fastcoast = fastcoast
+        self.fastcoast_tau = fastcoast_tau#how fast is the 'active coast'?
+        self.tail = TailServo()
+        self.tail_desired = 0
+        self.tailtheta_desired = 0
+        self.coast_thresh = 0.5#how slow does freq need to be to indicate that the fish should be stopping?
+        self.tailfreq = 1000#have to keep track of this to know whether we should coast
+
+
 
     def calcDerivs(self,alpha,alphaddot):
         #pull out state variables self.S,self.Cd,self.Kd,self.Cl,self.mb,self.J,self.L,self.rho,self.m,self.c,self.kf,self.a,self.band parameters for readability
@@ -125,8 +134,13 @@ class RigidFish:
         fu = -1/(2*mb)*rho*S*Cd*u*sqrt(u**2+v**2)+1/(2*mb)*rho*S*Cl*v*sqrt(u**2+v**2)*arctan2(v,u)
         fv = -1/(2*mb)*rho*S*Cd*v*sqrt(u**2+v**2)-1/(2*mb)*rho*S*Cl*u*sqrt(u**2+v**2)*arctan2(v,u)
         #state derivatives
-        udot = v*w + fu - c1*alphaddot*sin(alpha)
-        vdot = -v*w*fv + c1*alphaddot*cos(alpha)
+        if(self.tailfreq>=self.coast_thresh):
+            udot = v*w+fu - c1*alphaddot*sin(alpha)
+            vdot = -v*w+fv + c1*alphaddot*cos(alpha)
+        else:#if frequency is low, assume the fish 'wants' to stop. Would do so with pectorals, etc. in real life.
+            udot = -1.0/self.fastcoast_tau*self.x[0]
+            vdot = -1.0/self.fastcoast_tau*self.x[1]
+            print("coasting")
         wdot = -c3*w**2*sign(w) - c2*alphaddot*cos(alpha)-c4*m*alphaddot
         Xdot = u*cos(psi) - v*sin(psi)
         Ydot = u*sin(psi) + v*cos(psi)
@@ -134,11 +148,26 @@ class RigidFish:
         return array([udot,vdot,wdot,Xdot,Ydot,psidot])
 
     def EulerUpdateStates(self,alpha,alphaddot,dT):
+        self.dT = dT
         xdot = self.calcDerivs(alpha,alphaddot)
         self.x+=xdot*dT
         return self.x
 
-def main():
+    def driveFish(self, freq,amp,bias,dT,enable=1):
+        self.dT = dT
+        self.tailfreq = freq
+        if(enable==1):
+            self.tailtheta_desired+=freq*dT
+        else:
+            pass
+        self.tail_desired = bias+amp*sin(self.tailtheta_desired)
+        #first calculate servo position
+        self.tail.EulerUpdateStates(self.tail_desired,dT)
+        #now calculate fish  
+        self.EulerUpdateStates(self.tail.x[0],self.tail.xdot[1],dT)
+        return self.x #return fish state vector in this class
+
+def demoOpenLoop():
     print "this is the demo of the rigidfish class"
 
     tail = TailServo()
@@ -152,7 +181,7 @@ def main():
 
     fish = RigidFish()
 
-    simtime = 10#seconds
+    simtime = 20#seconds
     dT = 0.001 #seconds, timestep for simulation
     t = arange(0,simtime,dT) #time vector
 
@@ -184,8 +213,44 @@ def main():
     ylabel('Tail angle (deg)')
     show()
 
+def demoDriveFish():
+    print "this is the demo of the rigidfish class"
+
+
+    fish = RigidFish()
+
+    simtime = 10#seconds
+    dT = 0.001 #seconds, timestep for simulation
+    t = arange(0,simtime,dT) #time vector
+
+    tail_freq = 2*pi*1.
+    tail_bias = 40*pi/180
+    tail_amp = 40*pi/180
+
+    fish_x = zeros((len(t),6))
+
+    for ind in range(1,len(t)):
+        #now calculate fish  
+        if((t[ind])<=(simtime/2.0)):
+            fish_x[ind,:] = fish.driveFish(tail_freq,tail_amp,tail_bias,dT,1)
+        else:
+            fish_x[ind,:] = fish.driveFish(0,tail_amp,tail_bias,dT,1)
+    
+    figure()
+    plot(fish_x[:,3],fish_x[:,4],'k')
+    axis('equal')
+    xlabel('Fish X (m)')
+    ylabel('Fish Y (m)')
+    
+    figure()
+    plot(t,fish_x[:,0],'k',t,fish_x[:,1],'r')
+    #axis('equal')
+    xlabel('Fish X (m)')
+    ylabel('Fish Y (m)')
+
+    show()
 
 
 
 if __name__ == '__main__':
-    main()
+    demoDriveFish()
