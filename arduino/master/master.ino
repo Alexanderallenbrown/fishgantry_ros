@@ -30,7 +30,7 @@ int address4 = 5;
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin();
+  Wire.begin(6);
 }
 
 void loop()
@@ -45,7 +45,6 @@ void loop()
       cmd2 = Serial.parseFloat();
       cmd3 = Serial.parseFloat();
       cmd4 = Serial.parseFloat();
-      cmd5 = Serial.parseFloat();
       tailcommand = Serial.parseFloat();
       tailcommand += 90;
       if (tailcommand > 90.0) {
@@ -75,7 +74,7 @@ void loop()
   I2C_readAnything(feedback1);
   I2C_readAnything(command1_fdbk);
   Wire.endTransmission();
-  
+
   //Write Command to Axis 2
   Wire.beginTransmission (address2);
   I2C_writeAnything (cmd2);

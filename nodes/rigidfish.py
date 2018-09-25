@@ -80,7 +80,7 @@ class TailServo:
 
 
 class RigidFish:
-    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411,fastcoast=True,fastcoast_tau = 0.2):
+    def __init__(self,S=.01,Cd=.6418,Kd=6.5e-4,Cl=3.41,mb=.311,J=1.08e-4,L=.02,rho=1000.,m=.4909,c=3.25*.0254,kf=.918,a=-.0116,b=.411,fastcoast=True,fastcoast_tau = 0.2,height_tau = 0.5, tilt_tau = 0.2):
         """ 
         RigidFish(S=.01,Cd=.4418,Kd=6.5e-4,Cl=3.41,mb=.311,J=5.08e-4,L=.04,rho=1000.,m=.4909,c=0.07,kf=.918,a=-.0116,b=.411)
         Model adapted from Tan (2013) Chinese Control Conference
@@ -118,8 +118,22 @@ class RigidFish:
         self.tailtheta_desired = 0
         self.coast_thresh = 0.5#how slow does freq need to be to indicate that the fish should be stopping?
         self.tailfreq = 1000#have to keep track of this to know whether we should coast
+        self.height_tau = height_tau
+        self.tilt_tau = tilt_tau
+
+        self.tilt_command = 0
+        self.tilt = 0
+        self.height_command = 0
+        self.height = 0
 
 
+    def updateTilt(self,tiltcommand,dT):
+        self.tilt_command = tilt_command
+        self.tilt += dT/self.tilt_tau*(self.tiltcommand-self.tilt)
+
+    def updateHeight(self,heightcommand,dT):
+        self.height_command = height_command
+        self.height += dT/self.height_tau*(self.heightcommand-self.height)
 
     def calcDerivs(self,alpha,alphaddot):
         #pull out state variables self.S,self.Cd,self.Kd,self.Cl,self.mb,self.J,self.L,self.rho,self.m,self.c,self.kf,self.a,self.band parameters for readability
@@ -149,10 +163,12 @@ class RigidFish:
         psidot = w
         return array([udot,vdot,wdot,Xdot,Ydot,psidot])
 
-    def EulerUpdateStates(self,alpha,alphaddot,dT):
+    def EulerUpdateStates(self,alpha,alphaddot,dT,tiltcomand = 0,heightcommand=0):
         self.dT = dT
         xdot = self.calcDerivs(alpha,alphaddot)
         self.x+=xdot*dT
+        self.updateTilt(tiltcommand,dT)
+        self.updateHeight(heightcommand,dT)
         return self.x
 
     def driveFish(self, freq,amp,bias,dT,enable=1):
