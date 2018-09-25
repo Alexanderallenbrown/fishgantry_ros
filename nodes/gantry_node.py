@@ -13,7 +13,7 @@ from geometry_msgs.msg import PoseStamped
 
 class FishGantry():
   def __init__(self):
-    self.port = rospy.get_param('~port','/dev/ttyUSB0')
+    self.port = rospy.get_param('~port','/dev/ttyACM0')
     self.baud = rospy.get_param('~baud',115200)
     self.ser = serial.Serial(self.port, self.baud,timeout=1) #this initializes the serial object
     self.pub= rospy.Publisher("fishgantry/robotpose",PoseStamped)
@@ -25,10 +25,12 @@ class FishGantry():
     self.command.pose.position.x = 0
     self.command.pose.position.y = 0
     self.command.pose.position.z = 0
+    self.command.pose.orientation.z = 0
+    self.command.pose.orientation.x = 0
     self.tailcommand = 0;
 
     #main loop runs on a timer, which ensures that we get timely updates from the gantry arduino
-    rospy.Timer(rospy.Duration(.01),self.loop,oneshot=False) #timer callback (math) allows filter to run at constant time
+    rospy.Timer(rospy.Duration(.02),self.loop,oneshot=False) #timer callback (math) allows filter to run at constant time
     #subscribers (inputs)
     #construct the file name for our text output file
     rospack = rospkg.RosPack()
@@ -42,10 +44,13 @@ class FishGantry():
     self.command.pose.position.x = data.pose.position.x
     self.command.pose.position.y = data.pose.position.y
     self.command.pose.position.z = data.pose.position.z
+    self.command.pose.orientation.z = data.pose.orientation.z
+    self.command.pose.orientation.x = data.pose.orientation.x
+
     #print "received: "+str(self.command.pose.position.x)
 
   def loop(self,event):
-    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(13.55*self.command.pose.orientation.z)+','+"{0:.2f}".format(self.command.pose.position.z)+','+str(0)+','+str(0)+','+"{0:.2f}".format(self.tailcommand*180/3.14)+'\r\n'
+    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(self.command.pose.orientation.z)+','+"{0:.2f}".format(self.command.pose.position.z)+','+"{0:.2f}".format(self.command.pose.orientation.x)+','+"{0:.2f}".format(self.tailcommand*180/3.14)+'\r\n'
     print "sending: "+serstring
     self.ser.write(serstring)
     line = self.ser.readline()

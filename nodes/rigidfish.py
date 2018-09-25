@@ -128,12 +128,12 @@ class RigidFish:
 
 
     def updateTilt(self,tiltcommand,dT):
-        self.tilt_command = tilt_command
-        self.tilt += dT/self.tilt_tau*(self.tiltcommand-self.tilt)
+        self.tilt_command = tiltcommand
+        self.tilt += dT/self.tilt_tau*(self.tilt_command-self.tilt)
 
     def updateHeight(self,heightcommand,dT):
-        self.height_command = height_command
-        self.height += dT/self.height_tau*(self.heightcommand-self.height)
+        self.height_command = heightcommand
+        self.height += dT/self.height_tau*(self.height_command-self.height)
 
     def calcDerivs(self,alpha,alphaddot):
         #pull out state variables self.S,self.Cd,self.Kd,self.Cl,self.mb,self.J,self.L,self.rho,self.m,self.c,self.kf,self.a,self.band parameters for readability
@@ -163,7 +163,7 @@ class RigidFish:
         psidot = w
         return array([udot,vdot,wdot,Xdot,Ydot,psidot])
 
-    def EulerUpdateStates(self,alpha,alphaddot,dT,tiltcomand = 0,heightcommand=0):
+    def EulerUpdateStates(self,alpha,alphaddot,dT,tiltcommand = 0,heightcommand=0):
         self.dT = dT
         xdot = self.calcDerivs(alpha,alphaddot)
         self.x+=xdot*dT

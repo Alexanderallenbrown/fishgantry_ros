@@ -23,6 +23,8 @@ float oldcommand = 0;
 float oldoldcommand = 0;
 float battery_voltage = 4.0;
 
+float commandvec[] = {command,servocommand};
+
 float sinfreq = 2;
 float sinamp = PI/2;
 float sinangle = 0;
@@ -98,14 +100,6 @@ void loop() {
 
   //now compute the voltage command
   if (closedloop) {
-    //figure out where we want motor to go
-    sinangle+=dt*sinfreq;
-//    float newcommand = sinamp*sin(sinangle)+(potval - 512.0) * 1.0 * PI / 512.0; //one full revolution
-    float newcommand = sinamp*sin(sinangle); //one full revolution
-
-    //filter the command position using a second order filter
-    //COMMAND IS NOW READ FROM i2c MASTER!!!
-    //command = newcommand;
     
     //now compute the error
     e = command - posrad;
@@ -191,11 +185,12 @@ void requestEvent()
   //interrupts();
 }
 void receiveEvent(int howMany){
-  if (howMany >= ((sizeof command)+(sizeof servocommand)))
+  if (howMany >= ((sizeof commandvec)))
    {
     //noInterrupts();
-   I2C_readAnything (command); 
-   I2C_readAnything (servocommand);
+   I2C_readAnything (commandvec); 
+   command=commandvec[0];
+   servocommand=commandvec[1];
       
     //interrupts();
    }  // end if have enough data

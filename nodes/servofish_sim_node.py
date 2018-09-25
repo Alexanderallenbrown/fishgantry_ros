@@ -51,6 +51,8 @@ class PosePublisher():
         self.tailcontroller = rigidfish.TailCommandGenerator()
         self.tailsim = rigidfish.TailServo()
         self.fishsim = rigidfish.RigidFish()
+        self.tiltgoal = 0
+        self.heightgoal = 0
 
         #publishers
         self.posepub = rospy.Publisher('/fishgantry/commandpose',PoseStamped,queue_size=1)
@@ -78,7 +80,7 @@ class PosePublisher():
         #update the tail states
         self.tailsim.EulerUpdateStates(self.tailcontroller.theta_ref,self.dT)
         #now update the fish states
-        self.fishsim.EulerUpdateStates(self.tailsim.x[0],self.tailsim.xdot[1],self.dT)
+        self.fishsim.EulerUpdateStates(self.tailsim.x[0],self.tailsim.xdot[1],self.dT,self.tiltgoal,self.heightgoal)
         
         #now publish the appropriate things: Poses for fish and tail, transforms for fish and tail, and markers for fish and tail
 
@@ -178,6 +180,8 @@ class PosePublisher():
         self.amp = data.tail_amp
         self.enable = data.tail_enable
         self.heightgoal = data.height_goal
+        self.tiltgoal = data.tilt_goal
+        self.tail_enable = tail_enable
         # if data.buttons[6]==1:
         #     self.tailcontroller.update(1,freqcommand,ampcommand,biascommand)
         # else:

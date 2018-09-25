@@ -9,6 +9,7 @@ float cmd3 = 0;
 float cmd4 = 0;
 float cmd5 = 0;
 float tailcommand = 0;
+float command4vec[] = {0,0};
 
 float command1_fdbk = 0;
 float command2_fdbk = 0;
@@ -96,10 +97,11 @@ void loop()
   I2C_readAnything(feedback3);
   I2C_readAnything(command3_fdbk);
   Wire.endTransmission();
-
+//
   //Write Command to Axis 4, which INCLUDES THE TAIL!!
+  command4vec[0] = cmd4;
+  command4vec[1] = tailcommand;
   Wire.beginTransmission (address4);
-  I2C_writeAnything (cmd4);
   I2C_writeAnything (tailcommand);
   Wire.endTransmission ();
   //Receive Feedback from Axis 4
