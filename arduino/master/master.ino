@@ -48,11 +48,11 @@ void loop()
       cmd4 = Serial.parseFloat();
       tailcommand = Serial.parseFloat();
       tailcommand += 90;
-      if (tailcommand > 90.0) {
+      if (tailcommand > 180.0) {
         tailcommand = 90.0;
       }
-      else if (tailcommand < -90.0) {
-        tailcommand = -90.0;
+      else if (tailcommand < 0.0) {
+        tailcommand = 0.0;
       }
       //now send feedback about what we saw
       Serial.print(feedback1);
@@ -102,7 +102,9 @@ void loop()
   command4vec[0] = cmd4;
   command4vec[1] = tailcommand;
   Wire.beginTransmission (address4);
-  I2C_writeAnything (tailcommand);
+//  I2C_writeAnything (command4vec);
+I2C_writeAnything (cmd4);
+I2C_writeAnything (tailcommand);
   Wire.endTransmission ();
   //Receive Feedback from Axis 4
   Wire.beginTransmission(address4);

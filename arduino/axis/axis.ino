@@ -110,9 +110,6 @@ void loop() {
   //now compute the voltage command
   if (closedloop) {
     //figure out where we want motor to go
-    sinangle+=dt*sinfreq;
-//    float newcommand = sinamp*sin(sinangle)+(potval - 512.0) * 1.0 * PI / 512.0; //one full revolution
-    float newcommand = sinamp*sin(sinangle); //one full revolution
 
     //filter the command position using a second order filter
     //COMMAND IS NOW READ FROM i2c MASTER!!!

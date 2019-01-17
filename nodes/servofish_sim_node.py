@@ -97,8 +97,8 @@ class PosePublisher():
         fishpose_msg.header.stamp = self.timenow
         fishpose_msg.pose.position.x = self.fishsim.x[3]
         fishpose_msg.pose.position.y = self.fishsim.x[4]
-        fishpose_msg.pose.position.z = self.heightgoal
-        fishpose_msg.pose.orientation.x = 0
+        fishpose_msg.pose.position.z = self.fishsim.height
+        fishpose_msg.pose.orientation.x = self.fishsim.tilt
         fishpose_msg.pose.orientation.y = 0
         fishpose_msg.pose.orientation.z = self.fishsim.x[5]
         fishpose_msg.header.frame_id='/world'
@@ -181,7 +181,7 @@ class PosePublisher():
         self.enable = data.tail_enable
         self.heightgoal = data.height_goal
         self.tiltgoal = data.tilt_goal
-        self.tail_enable = tail_enable
+        self.tail_enable = data.tail_enable
         # if data.buttons[6]==1:
         #     self.tailcontroller.update(1,freqcommand,ampcommand,biascommand)
         # else:

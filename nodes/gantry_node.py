@@ -30,7 +30,7 @@ class FishGantry():
     self.tailcommand = 0;
 
     #main loop runs on a timer, which ensures that we get timely updates from the gantry arduino
-    rospy.Timer(rospy.Duration(.02),self.loop,oneshot=False) #timer callback (math) allows filter to run at constant time
+    rospy.Timer(rospy.Duration(.05),self.loop,oneshot=False) #timer callback (math) allows filter to run at constant time
     #subscribers (inputs)
     #construct the file name for our text output file
     rospack = rospkg.RosPack()
@@ -50,7 +50,7 @@ class FishGantry():
     #print "received: "+str(self.command.pose.position.x)
 
   def loop(self,event):
-    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(self.command.pose.orientation.z)+','+"{0:.2f}".format(self.command.pose.position.z)+','+"{0:.2f}".format(self.command.pose.orientation.x)+','+"{0:.2f}".format(self.tailcommand*180/3.14)+'\r\n'
+    serstring = '!'+"{0:.2f}".format(13.55*self.command.pose.position.x)+','+"{0:.2f}".format(-self.command.pose.orientation.z)+','+"{0:.2f}".format(self.command.pose.position.z)+','+"{0:.2f}".format(self.command.pose.orientation.x)+','+"{0:.2f}".format(self.tailcommand*180/3.14)+'\r\n'
     print "sending: "+serstring
     self.ser.write(serstring)
     line = self.ser.readline()
