@@ -48,6 +48,9 @@ int in1pin = 4;
 int in2pin = 5;
 int enpin = 6;
 
+int lim1pin = 10;
+int lim2pin = 8;
+
 int potval;
 float fV;
 int V;
@@ -64,9 +67,21 @@ delayMicroseconds(1000);
   pinMode(in1pin, OUTPUT);
   delayMicroseconds(1000);
   pinMode(in2pin, OUTPUT);
+  pinMode(lim1pin,INPUT);
+  pinMode(lim2pin,INPUT);
   //attach the interrupts
   attachInterrupt(2, channelA, CHANGE);
   attachInterrupt(3, channelB, CHANGE);
+
+  Serial.print("HOMING...");
+  //limit lim1 is pin 10, limit lim2 is pin 8.
+  //home the axis
+  while(digitalRead(lim1pin)==LOW){
+    digitalWrite(in1pin, LOW);
+    digitalWrite(in2pin, HIGH);
+    analogWrite(enpin, 150);
+  }
+  unCountShared=0;
 
 }
 
