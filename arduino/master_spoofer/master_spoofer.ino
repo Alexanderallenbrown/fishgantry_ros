@@ -1,10 +1,5 @@
 #include <Wire.h>
 #include "i2cAnything.h"
-#include <Servo.h>
-
-Servo myservo;
-
-int servopin=6;
 
 //float feedback;
 //float voltage;
@@ -14,6 +9,7 @@ float cmd3 = 0;
 float cmd4 = 0;
 float cmd5 = 0;
 float tailcommand = 0;
+float command4vec[] = {0,0};
 
 float command1_fdbk = 0;
 float command2_fdbk = 0;
@@ -26,12 +22,14 @@ float feedback2 = 0;
 float feedback3 = 0;
 float feedback4 = 0;
 float feedback5 = 0;
+float feedback6 = 0;
 
 float ofeedback1 = 0;
 float ofeedback2 = 0;
 float ofeedback3 = 0;
 float ofeedback4 = 0;
 float ofeedback5 = 0;
+float ofeedback6 = 0;
 
 float tau = 0.1;//seconds
 float dt = .01;//seconds
@@ -49,9 +47,7 @@ int address6 = 7;//this is becauase need to double up on y axis
 
 void setup(){
   Serial.begin(115200);
-  Wire.begin();
-  myservo.attach(6);
-  
+  Wire.begin(1);
 }
 
 void loop()
