@@ -9,8 +9,12 @@ float testpos = 1.2345678;
 volatile byte* posFloatPtr;
 int Address = 3;
 
+///// NOTE: This version homes the unit if the command is 111.10 exactly ///////
+//// ALSO: -222.20 disables the axis (enabled by default) ////
+//// ALSO: -333.30 enables the axis (enabled by default) ////
 
 boolean closedloop = true;
+boolean menable = true;// this is the motor enable
 
 float kp = 50.0;
 float ki = 0.0;
@@ -73,7 +77,10 @@ delayMicroseconds(1000);
   attachInterrupt(2, channelA, CHANGE);
   attachInterrupt(3, channelB, CHANGE);
 
-  Serial.print("HOMING...");
+}
+
+void homeit(){
+    Serial.print("HOMING...");
   //limit lim1 is pin 10, limit lim2 is pin 8.
   //home the axis
   while(digitalRead(lim1pin)==LOW){
@@ -81,9 +88,9 @@ delayMicroseconds(1000);
     digitalWrite(in2pin, HIGH);
     analogWrite(enpin, 150);
   }
+  
   unCountShared=0;
-
-}
+  }
 
 void loop() {
 
@@ -116,6 +123,19 @@ void loop() {
     //command = newcommand;
     
     //now compute the error
+    if(command==-111.10){
+      command=0;
+      homeit();
+    }
+    else if(command==-222.20){
+      menable = false;
+      command=posrad;
+    }
+    else if(command=-333.30){
+      menable = true;
+      command=posrad;
+    }
+    
     e = command - posrad;
     //error derivative
     dedt = (e - olde) / dt;
@@ -146,7 +166,7 @@ void loop() {
 
 
 
-
+if(menable){
   if (V < 0) {
     digitalWrite(in1pin, LOW);
     digitalWrite(in2pin, HIGH);
@@ -157,6 +177,10 @@ void loop() {
     digitalWrite(in2pin, LOW);
     analogWrite(enpin, abs(V));
   }
+}
+else{
+  analogWrite(enpin,0);
+}
 
   Serial.print(dt, 5);
   Serial.print("\t");
