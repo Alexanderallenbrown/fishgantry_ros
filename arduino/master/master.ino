@@ -186,7 +186,7 @@ if(!spoof6){
   Wire.endTransmission ();
   //Receive Feedback from Axis 3
   Wire.beginTransmission(address6);
-  Wire.requestFrom(address6, sizeof(feedback5) + sizeof(cmd6));            
+  Wire.requestFrom(address6, sizeof(feedback6) + sizeof(cmd5));            
   I2C_readAnything(feedback6);
   I2C_readAnything(command6_fdbk);
   Wire.endTransmission();
