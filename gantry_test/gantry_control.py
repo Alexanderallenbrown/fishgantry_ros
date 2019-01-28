@@ -26,31 +26,23 @@ from numpy import *
 
 
 class EllipticalPath():
-    def __init__(self,a=.1,b=.1,U=.05):
-        self.a,self.b,self.U = a,b,U
+    def __init__(self,a=.1,b=.1,U=.05,c=0.1,maxfreq = 3*2*pi,maxamp = 45,maxspeed = 0.1):
+        self.a,self.b,self.U,self.c,self.maxfreq,self.maxamp,self.maxspeed = a,b,U,c,maxfreq,maxamp,maxspeed
         self.theta = arange(0,2*pi,.01) #range of thetas
+        self.tailtheta = 0
+        self.tailangle = 0
+        self.tailfreq = self.U/self.maxspeed*self.maxfreq
         self.x = a*cos(self.theta)+a
         self.y = b*sin(self.theta)+b
+        #for swimming up and down
+        self.z = c*sin(self.theta)-c
         self.S = zeros(len(self.y))
         self.yaw = zeros(len(self.y))
-        roll=0
-        self.yaw[0] = arctan2(self.y[1]-self.y[0],self.x[1]-self.x[0])
-        for ind in range(1,len(self.S)):
-            delta_S = sqrt((self.x[ind]-self.x[ind-1])**2+(self.y[ind]-self.y[ind-1])**2)
-            self.S[ind]=self.S[ind-1]+delta_S
-            self.yaw[ind] = arctan2(self.y[ind]-self.y[ind-1],self.x[ind]-self.x[ind-1])
-            if(abs(self.yaw[ind]-self.yaw[ind-1])>=pi):
-                roll=1
-            self.yaw[ind] = self.yaw[ind]+roll*2*pi
-
-        for k in range(0,len(self.yaw)):
-            print self.yaw[k]
-        self.maxS = self.S[-1]
-        sind = where(self.theta>(pi))[0][0]
-        self.Snow = self.S[sind]
+        self.pitch = zeros(len(self.y))
+        self.yawnow = 0
+        self.pitchnow = 0
+        self.updateGeometry(a,b,U,c)
         self.laps = 0
-
-        self.xnow,self.ynow,self.yawnow = 0,0,0
 
     def update(self,dt,U):
         self.U = U
@@ -61,21 +53,28 @@ class EllipticalPath():
         self.xnow = interp(self.Snow,self.S,self.x)
         self.ynow = interp(self.Snow,self.S,self.y)
         self.yawnow = interp(self.Snow,self.S,self.yaw)
+        self.znow = interp(self.Snow,self.S,self.z)
+        self.pitchnow = interp(self.Snow,self.S,self.pitch)
+        self.tailfreq = self.U/self.maxspeed*self.maxfreq
+        self.tailtheta+=self.tailfreq*dt
+        self.tailangle = self.maxamp*sin(self.tailtheta)
         #print self.Snow,self.maxS
-        return self.xnow, self.ynow,self.yawnow
+        return self.xnow, self.ynow,self.yawnow,self.znow,self.pitchnow,self.tailangle
 
-    def updateGeometry(self,a,b,U):
-        self.a,self.b,self.U = a,b,U
-        self.theta = arange(0,2*pi,.01) #range of thetas
+    def updateGeometry(self,a,b,U,c):
         self.x = a*cos(self.theta)+a
         self.y = b*sin(self.theta)+b
+        self.z = c*sin(self.theta)-c
         self.S = zeros(len(self.y))
         roll=0
         self.yaw[0] = arctan2(self.y[1]-self.y[0],self.x[1]-self.x[0])
+        ind =1
+        self.pitch[ind] = arctan2(self.z[ind]-self.z[ind-1],sqrt((self.y[ind]-self.y[ind-1])**2+(self.x[ind]-self.x[ind-1])**2))
         for ind in range(1,len(self.S)):
             delta_S = sqrt((self.x[ind]-self.x[ind-1])**2+(self.y[ind]-self.y[ind-1])**2)
             self.S[ind]=self.S[ind-1]+delta_S
             self.yaw[ind] = arctan2(self.y[ind]-self.y[ind-1],self.x[ind]-self.x[ind-1])
+            self.pitch[ind] = arctan2(self.z[ind]-self.z[ind-1],sqrt((self.y[ind]-self.y[ind-1])**2+(self.x[ind]-self.x[ind-1])**2))
             if(abs(self.yaw[ind]-self.yaw[ind-1])>=pi):
                 roll=1
             self.yaw[ind] = self.yaw[ind]+roll*2*pi
@@ -145,7 +144,8 @@ class Window():
         self.U = .05
         self.a = .4
         self.b = .1
-        self.path = EllipticalPath(self.a,self.b,self.U)
+        self.c = .1
+        self.path = EllipticalPath(self.a,self.b,self.U,self.c)
         self.pathActive = False
         self.pathWasActive = False
 
@@ -335,7 +335,10 @@ class Window():
         if(self.pathActive):
             self.xmax=float(self.Exmax.get())
             self.ymax=float(self.Eymax.get())
-            self.path.updateGeometry(self.xmax/2,self.ymax/2,self.sU.get()/1000.0)
+            self.zmax = float(self.Ezmax.get())
+            self.pmax = float(self.Epmax.get())
+            self.amax = float(self.Eamax.get())
+            self.path.updateGeometry(self.xmax/2,self.ymax/2,self.sU.get()/1000.0,self.zmax/2)
             print("updated path geometry")
         #update the path x and y positions
         if(not self.pathActive):
@@ -349,12 +352,15 @@ class Window():
 
     def pathloop(self):
         #if path is active, update the x and y commands
-        x,y,yaw = self.path.update(self.delay/1000.0,self.sU.get()/1000.0)
+        x,y,yaw,z,pitch,tail = self.path.update(self.delay/1000.0,self.sU.get()/1000.0)
         #print(x,y,yaw)
         #now set the x and y sliders accordingly
         self.sx.set(x*self.sliderscale/self.xmax)
         self.sy.set(y*self.sliderscale/self.ymax)
         self.sa.set(yaw*self.sliderscale/self.amax)
+        self.sz.set(z*self.sliderscale/self.zmax)
+        self.st.set(tail*self.sliderscale/90.0)
+        self.sp.set(pitch*self.sliderscale/self.pmax)
         #if the path is active, run it again
         if(self.pathActive):
             self.pathbutton.after(self.delay,self.pathloop)
@@ -460,7 +466,7 @@ class Window():
             self.feedbackline.set_data(self.tvec,self.f3)
             #set the axis limits
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
-            self.ax.set_ylim([0,self.zmax])
+            self.ax.set_ylim([-self.zmax,0])
             self.ax.set_ylabel('z axis (m)')
             self.ax.set_xlabel("Time (s)")
         elif(self.plotaxis=="tilt axis"):
