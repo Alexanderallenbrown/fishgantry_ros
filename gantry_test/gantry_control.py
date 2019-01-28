@@ -24,6 +24,69 @@ from matplotlib.figure import Figure
 
 from numpy import *
 
+
+class EllipticalPath():
+    def __init__(self,a=.1,b=.1,U=.05):
+        self.a,self.b,self.U = a,b,U
+        self.theta = arange(0,2*pi,.01) #range of thetas
+        self.x = a*cos(self.theta)+a
+        self.y = b*sin(self.theta)+b
+        self.S = zeros(len(self.y))
+        self.yaw = zeros(len(self.y))
+        roll=0
+        self.yaw[0] = arctan2(self.y[1]-self.y[0],self.x[1]-self.x[0])
+        for ind in range(1,len(self.S)):
+            delta_S = sqrt((self.x[ind]-self.x[ind-1])**2+(self.y[ind]-self.y[ind-1])**2)
+            self.S[ind]=self.S[ind-1]+delta_S
+            self.yaw[ind] = arctan2(self.y[ind]-self.y[ind-1],self.x[ind]-self.x[ind-1])
+            if(abs(self.yaw[ind]-self.yaw[ind-1])>=pi):
+                roll=1
+            self.yaw[ind] = self.yaw[ind]+roll*2*pi
+
+        for k in range(0,len(self.yaw)):
+            print self.yaw[k]
+        self.maxS = self.S[-1]
+        sind = where(self.theta>(pi))[0][0]
+        self.Snow = self.S[sind]
+        self.laps = 0
+
+        self.xnow,self.ynow,self.yawnow = 0,0,0
+
+    def update(self,dt,U):
+        self.U = U
+        if(self.Snow)>self.maxS:
+            self.Snow-=self.maxS
+            self.laps+=1
+        self.Snow += dt*self.U
+        self.xnow = interp(self.Snow,self.S,self.x)
+        self.ynow = interp(self.Snow,self.S,self.y)
+        self.yawnow = interp(self.Snow,self.S,self.yaw)
+        #print self.Snow,self.maxS
+        return self.xnow, self.ynow,self.yawnow
+
+    def updateGeometry(self,a,b,U):
+        self.a,self.b,self.U = a,b,U
+        self.theta = arange(0,2*pi,.01) #range of thetas
+        self.x = a*cos(self.theta)+a
+        self.y = b*sin(self.theta)+b
+        self.S = zeros(len(self.y))
+        roll=0
+        self.yaw[0] = arctan2(self.y[1]-self.y[0],self.x[1]-self.x[0])
+        for ind in range(1,len(self.S)):
+            delta_S = sqrt((self.x[ind]-self.x[ind-1])**2+(self.y[ind]-self.y[ind-1])**2)
+            self.S[ind]=self.S[ind-1]+delta_S
+            self.yaw[ind] = arctan2(self.y[ind]-self.y[ind-1],self.x[ind]-self.x[ind-1])
+            if(abs(self.yaw[ind]-self.yaw[ind-1])>=pi):
+                roll=1
+            self.yaw[ind] = self.yaw[ind]+roll*2*pi
+
+        self.maxS = self.S[-1]
+        sind = where(self.theta>(pi))[0][0]
+        self.Snow = self.S[sind]
+
+        self.xnow,self.ynow = 0,0
+
+
 class Window():
     def __init__(self, master=None):
         #Frame.__init__(self, master)    
@@ -32,6 +95,9 @@ class Window():
         self.refreshdelay = 100
         self.tnow = time.time()
         self.starttime =self.tnow
+        self.sendHome = False
+        self.disable = 0
+        self.olddisable = 0
 
         self.master = master
         #numpy stuff
@@ -73,24 +139,35 @@ class Window():
         self.amax=1
 
         self.plotaxis = 1
-        self.sliderscale = 100
+        self.sliderscale = 1000
+
+        #stuff for elliptical patth
+        self.U = .05
+        self.a = .4
+        self.b = .1
+        self.path = EllipticalPath(self.a,self.b,self.U)
+        self.pathActive = False
+        self.pathWasActive = False
 
         #initialize the window
         self.init_window()
     def init_window(self):
         self.master.title("GANTRY CONTROL")
         # allowing the widget to take the full space of the root window
-        # self.master.pack(fill=BOTH, expand=1)
+        #self.master.pack(fill=BOTH, expand=1)
         self.lside = Frame(self.master)
+        #self.rrside = Frame(self.master)
         self.mside = Frame(self.master)
         self.rside = Frame(self.master)
         self.lside.pack(side="left")
-        self.mside.pack(side="right")
+        #self.rrside.pack(side="right")
+        self.mside.pack(side="left")
         self.rside.pack(side="bottom")
 
         #fake button for running timed loop
         self.loopbutton = Button(self.master)
         self.refreshbutton = Button(self.master)
+        self.pathbutton = Button(self.master)
 
         #label and box for serial port
         Tport=StringVar()
@@ -133,7 +210,7 @@ class Window():
 
         Tz=StringVar()
         Tz.set("z command")
-        self.sz = Scale(self.master,from_=0,to=self.sliderscale,orient=HORIZONTAL,length=200)
+        self.sz = Scale(self.master,from_=-self.sliderscale,to=0,orient=HORIZONTAL,length=200)
         self.sz.pack(in_=self.lside,side="top")
         Lz=Label(self.master, textvariable=Tz, height=1)
         Lz.pack(in_=self.lside,side="top")
@@ -160,6 +237,29 @@ class Window():
         Lt=Label(self.master, textvariable=Tt, height=1)
         Lt.pack(in_=self.lside,side="top")
         
+        #create a home button
+        # SV = StringVar()
+        # SV.set("Home ALL")
+        # L = Label(self.master,textvariable=SV,height=1)
+        # L.pack(in_=self.mside,side="top")
+        # SV = StringVar()
+        self.Hbutton = Button(master=self.master, text="Home", command=self.sethome)
+        self.Hbutton.pack(in_=self.mside,side="top")
+
+        self.enbox = Checkbutton(self.master, text="Disable", variable=self.disable)
+        self.enbox.pack(in_=self.mside,side="top")
+
+        #make button for activating elliptical path
+        self.Pbutton = Button(master=self.master, text="Enable Elliptical Path", command=self.setpath)
+        self.Pbutton.pack(in_=self.mside,side="top")
+
+        Ta=StringVar()
+        Ta.set("Path Speed (mm/s)")
+        self.sU = Scale(self.master,from_=0,to=300,orient=HORIZONTAL,length=200)
+        self.sU.pack(in_=self.mside,side="top")
+        La=Label(self.master, textvariable=Ta, height=1)
+        La.pack(in_=self.lside,side="top")
+
         #create the dropdown menu for axes:
         SV = StringVar()
         SV.set("Axis To Plot")
@@ -167,7 +267,7 @@ class Window():
         L.pack(in_=self.mside,side="top")
         self.axisstring = StringVar()
         self.axisstring.set("x axis")
-        self.om = OptionMenu(self.master, self.axisstring, "x axis", "y axis", "z axis","tilt axis","yaw axis")
+        self.om = OptionMenu(self.master, self.axisstring, "x axis", "y axis", "z axis","tilt axis","yaw axis","xy plan view")
         self.om.pack(in_=self.mside,side="top")
         
         #set up the canvas for the figure
@@ -188,7 +288,7 @@ class Window():
         l=Label(self.master, textvariable=s, height=1)
         l.pack(in_=self.mside,side="left")
         SV = StringVar()
-        SV.set("0.75")
+        SV.set("0.4")
         self.Exmax =Entry(self.master,textvariable=SV,width=5)
         self.Exmax.pack(in_=self.mside,side="left")
 
@@ -224,24 +324,70 @@ class Window():
         l=Label(self.master, textvariable=s, height=1)
         l.pack(in_=self.mside,side="left")
         SV = StringVar()
-        SV.set("6")
+        SV.set("12.6")
         self.Eamax =Entry(self.master,textvariable=SV,width=5)
         self.Eamax.pack(in_=self.mside,side="left")  
         
     
+    def setpath(self):
+        self.pathActive = not self.pathActive
+        #get the a and b for this ellipse, and update the path geometry
+        if(self.pathActive):
+            self.xmax=float(self.Exmax.get())
+            self.ymax=float(self.Eymax.get())
+            self.path.updateGeometry(self.xmax/2,self.ymax/2,self.sU.get()/1000.0)
+            print("updated path geometry")
+        #update the path x and y positions
+        if(not self.pathActive):
+            self.Pbutton.config(text="Enable Elliptical Path")
+        else:
+            self.Pbutton.config(text="Disable Elliptical Path")
+            self.pathbutton.after(self.delay,self.pathloop)
+        
+
+
+
+    def pathloop(self):
+        #if path is active, update the x and y commands
+        x,y,yaw = self.path.update(self.delay/1000.0,self.sU.get()/1000.0)
+        #print(x,y,yaw)
+        #now set the x and y sliders accordingly
+        self.sx.set(x*self.sliderscale/self.xmax)
+        self.sy.set(y*self.sliderscale/self.ymax)
+        self.sa.set(yaw*self.sliderscale/self.amax)
+        #if the path is active, run it again
+        if(self.pathActive):
+            self.pathbutton.after(self.delay,self.pathloop)
+
+
+    def sethome(self):
+        self.sendHome = True
+
     def loop(self):
         #do all of the things
         #print "running"
         #first, get the value from each slider
-        c1,c2,c3,c4,c5,c6 = float(self.sx.get())*self.xmax/self.sliderscale,float(self.sy.get())*self.ymax/self.sliderscale,float(self.sz.get())*self.zmax/self.sliderscale,float(self.sp.get())*self.pmax/self.sliderscale,float(self.sa.get())*self.amax/self.sliderscale,float(self.st.get())
+        if(not self.sendHome):
+            c1,c2,c3,c4,c5,c6 = float(self.sx.get())*self.xmax/self.sliderscale,float(self.sy.get())*self.ymax/self.sliderscale,float(self.sz.get())*self.zmax/self.sliderscale,float(self.sp.get())*self.pmax/self.sliderscale,(float(self.sa.get()))*self.amax/self.sliderscale+self.path.laps*2*pi,float(self.st.get())
+        else:
+            c1,c2,c3,c4,c5,c6 = -111.1,-111.1,-111.1,-111.1,-111.1,0
+            self.sendHome = False
+
+        if(self.disable==1 and self.olddisable==0):
+            c1,c2,c3,c4,c5,c6 = -222.2,-222.2,-222.2,-222.2,-222.2,0
+        elif(self.disable==0 and self.olddisable == 1):
+            c1,c2,c3,c4,c5,c6 = -333.3,-333.3,-333.3,-333.3,-333.3,0
+        self.olddisable = self.disable
+
         #print c1,c2,c3,c4,c5,c6
-        strcom = '!'+str(c1)+','+str(c2)+','+str(c3)+','+str(c4)+','+str(c5)+','+str(c6)+'\r\n'
+        strcom = '!'+"{0:.4f}".format(c1)+","+"{0:.4f}".format(c2)+","+"{0:.4f}".format(c3)+","+"{0:.4f}".format(c4)+","+"{0:.4f}".format(c5)+","+"{0:.4f}".format(c6)+'\r\n'
         # HERE IS WHERE SERIAL GOES
         self.ser.write(strcom)
         line = self.ser.readline()
         #print line
         #if we actually have data (sometimes the computer outruns the ARduino)
         if len(line)>0:
+            #print line
             #the strip command basically strips the \r\n characters from the end. Remember, it read a string, so the data are still just text.
             #the variable line will look something like '1.234,5.0,4.9\r\n'
             stripline = line.strip()
@@ -283,20 +429,14 @@ class Window():
         self.f5.append(f5)
         
         self.tvec.append(self.tnow)
-        
-
-        
-
-
-
         if(self.running):
             self.loopbutton.after(self.delay,self.loop)
 
     def refresh(self):
-        print "refreshing"
+        #print "refreshing"
 
         self.plotaxis = self.axisstring.get()
-        print self.plotaxis
+        #print self.plotaxis
 
         #actually set the data for each line
         if(self.plotaxis=="x axis"):
@@ -306,6 +446,7 @@ class Window():
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
             self.ax.set_ylim([0,self.xmax])
             self.ax.set_ylabel('x axis (m)')
+            self.ax.set_xlabel("Time (s)")
         elif(self.plotaxis=="y axis"):
             self.commandline.set_data(self.tvec,self.c2)
             self.feedbackline.set_data(self.tvec,self.f2)
@@ -313,6 +454,7 @@ class Window():
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
             self.ax.set_ylim([0,self.ymax])
             self.ax.set_ylabel('y axis (m)')
+            self.ax.set_xlabel("Time (s)")
         elif(self.plotaxis=="z axis"):
             self.commandline.set_data(self.tvec,self.c3)
             self.feedbackline.set_data(self.tvec,self.f3)
@@ -320,6 +462,7 @@ class Window():
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
             self.ax.set_ylim([0,self.zmax])
             self.ax.set_ylabel('z axis (m)')
+            self.ax.set_xlabel("Time (s)")
         elif(self.plotaxis=="tilt axis"):
             self.commandline.set_data(self.tvec,self.c4)
             self.feedbackline.set_data(self.tvec,self.f4)
@@ -327,13 +470,23 @@ class Window():
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
             self.ax.set_ylim([0,self.pmax])
             self.ax.set_ylabel('tilt axis (rad)')
+            self.ax.set_xlabel("Time (s)")
         elif(self.plotaxis=="yaw axis"):
             self.commandline.set_data(self.tvec,self.c5)
             self.feedbackline.set_data(self.tvec,self.f5)
             #set the axis limits
             self.ax.set_xlim([self.tvec[0],self.tvec[-1]])
-            self.ax.set_ylim([0,self.amax])
+            self.ax.set_ylim([0,self.amax+self.path.laps*2*pi])
             self.ax.set_ylabel('yaw axis (rad)')
+            self.ax.set_xlabel("Time (s)")
+        elif(self.plotaxis == "xy plan view"):
+            self.commandline.set_data(self.c1,self.c2)
+            self.feedbackline.set_data(self.f1,self.f2)
+            self.ax.set_xlim([0,self.xmax])
+            self.ax.set_ylim([0,self.ymax])
+            self.ax.set_aspect('equal')
+            self.ax.set_ylabel("y position (m)")
+            self.ax.set_xlabel("x position (m)")
        
         self.canvas.draw()
         if(self.running):

@@ -78,15 +78,15 @@ if (Serial.available())
    }
    Serial.print(ftnow);
    Serial.print("\t");
-   Serial.print(feedback1);
+   Serial.print(feedback1,4);
    Serial.print("\t");
-   Serial.print(feedback2);
+   Serial.print(feedback2,4);
    Serial.print("\t");
-   Serial.print(feedback3);
+   Serial.print(feedback3,4);
    Serial.print("\t");
-   Serial.print(feedback4);
+   Serial.print(feedback4,4);
    Serial.print("\t");
-   Serial.print(feedback5);
+   Serial.print(feedback5,4);
    Serial.println();
  }
 }
