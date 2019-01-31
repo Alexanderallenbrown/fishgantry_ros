@@ -7,7 +7,7 @@
 float testpos = 1.2345678;
 //for sending data back through i2c
 volatile byte* posFloatPtr;
-int Address = 2;
+int Address = 102;
 
 ///// NOTE: This version homes the unit if the command is 111.10 exactly ///////
 //// ALSO: -222.20 disables the axis (enabled by default) ////

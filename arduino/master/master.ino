@@ -39,12 +39,12 @@ unsigned long dtmicros=100;
 unsigned long tnow=0;
 unsigned long oldt=0;
 
-int address1 = 2;
-int address2 = 3;
-int address3 = 4;
-int address4 = 5;
-int address5 = 6;
-int address6 = 8;//needed because we have two y axis motors
+int address1 = 102;
+int address2 = 103;
+int address3 = 104;
+int address4 = 105;
+int address5 = 106;
+int address6 = 108;//needed because we have two y axis motors
 
 bool spoof1 = false;
 bool spoof2 = false;
