@@ -82,7 +82,6 @@ class EllipticalPath():
         self.maxS = self.S[-1]
         sind = where(self.theta>(pi))[0][0]
         self.Snow = self.S[sind]
-
         self.xnow,self.ynow = 0,0
 
 
@@ -90,7 +89,7 @@ class Window():
     def __init__(self, master=None):
         #Frame.__init__(self, master)    
         self.running = False     
-        self.delay = 10 #milliseconds
+        self.delay = 20 #milliseconds
         self.refreshdelay = 100
         self.tnow = time.time()
         self.starttime =self.tnow
@@ -373,22 +372,39 @@ class Window():
         #do all of the things
         #print "running"
         #first, get the value from each slider
+        controlcommand = False
         if(not self.sendHome):
             c1,c2,c3,c4,c5,c6 = float(self.sx.get())*self.xmax/self.sliderscale,float(self.sy.get())*self.ymax/self.sliderscale,float(self.sz.get())*self.zmax/self.sliderscale,float(self.sp.get())*self.pmax/self.sliderscale,(float(self.sa.get()))*self.amax/self.sliderscale+self.path.laps*2*pi,float(self.st.get())
         else:
+            controlcommand=True
             c1,c2,c3,c4,c5,c6 = -111.1,-111.1,-111.1,-111.1,-111.1,0
-            self.sendHome = False
+            # self.sendHome = False
+
 
         if(self.disable==1 and self.olddisable==0):
             c1,c2,c3,c4,c5,c6 = -222.2,-222.2,-222.2,-222.2,-222.2,0
+            controlcommand = True
+            print "disabling"
+            strcom = '!'+str(c1)+','+str(c2)+','+str(c3)+','+str(c4)+','+str(c5)+','+str(c6)
         elif(self.disable==0 and self.olddisable == 1):
             c1,c2,c3,c4,c5,c6 = -333.3,-333.3,-333.3,-333.3,-333.3,0
+            strcom = '!'+str(c1)+','+str(c2)+','+str(c3)+','+str(c4)+','+str(c5)+','+str(c6)
+            controlcommand = True
+            print "enabling"
+        
+        if(controlcommand):
+            strcom = '!'+str(c1)+','+str(c2)+','+str(c3)+','+str(c4)+','+str(c5)+','+str(c6)
+            if(self.sendHome):
+                self.sendHome=False
+            controlcommand = False
+        else:
+            strcom = '!'+"{0:.4f}".format(c1)+","+"{0:.4f}".format(c2)+","+"{0:.4f}".format(c3)+","+"{0:.4f}".format(c4)+","+"{0:.4f}".format(c5)+","+"{0:.4f}".format(c6)+'\r\n'
+        
+        #print strcom
         self.olddisable = self.disable
-
-        #print c1,c2,c3,c4,c5,c6
-        strcom = '!'+"{0:.4f}".format(c1)+","+"{0:.4f}".format(c2)+","+"{0:.4f}".format(c3)+","+"{0:.4f}".format(c4)+","+"{0:.4f}".format(c5)+","+"{0:.4f}".format(c6)+'\r\n'
         # HERE IS WHERE SERIAL GOES
         self.ser.write(strcom)
+
         line = self.ser.readline()
         #print line
         #if we actually have data (sometimes the computer outruns the ARduino)
