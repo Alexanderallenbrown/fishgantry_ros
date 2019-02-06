@@ -236,14 +236,14 @@ void requestEvent()
 {
   I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
-sendFlag = true;
+ //sendFlag = true;
 }
 void receiveEvent(int howMany){
   if (howMany >= (sizeof command))
    {
    I2C_readAnything (command);    
    }  // end if have enough data
-receiveFlag = true;
+//receiveFlag = true;
 }
 
 // simple interrupt service routine

@@ -67,6 +67,9 @@ void loop()
   ftnow+=dt;
   oldt = tnow;
   //first, read the command(s) from the serial monitor
+  char myChar = '0';
+
+  
   if (Serial.available())
   {
     char myChar = Serial.read();
@@ -85,6 +88,11 @@ void loop()
       else if (tailcommand < 0.0) {
         tailcommand = 0.0;
       }
+
+      
+      //now send i2c as appropriate
+      sendI2C();
+      
       //now send feedback about what we saw
       Serial.print(ftnow,4);
       Serial.print("\t");
@@ -99,17 +107,20 @@ void loop()
       Serial.print(feedback5,4);
       Serial.println();
     }
+    else{
+      char junk = Serial.read();
+    }
   }
 
-  //if needed, instead of actually sending these commands anywhere, let's just run each through a low-pass filter to simulate.
-  //this will allow us to test interfaces to the master quickly and easily.
-  
-  if(spoof1){feedback1 = feedback1+dt/tau*(cmd1-feedback1);}
-  if(spoof2){feedback5 = feedback5+dt/tau*(cmd2-feedback5);}
-  if(spoof3){feedback3 = feedback3+dt/tau*(cmd3-feedback3);}
-  if(spoof4){feedback4 = feedback4+dt/tau*(cmd4-feedback4);}
-  if(spoof5){feedback2 = feedback2+dt/tau*(cmd5-feedback2);}
-//  delayMicroseconds(10);
+//process any spoofed variables
+procSpoofs();
+
+  delay(1);
+
+}
+
+
+void sendI2C(){
   //Write Command to Axis 1
   if(!spoof1){
   Wire.beginTransmission (address1);
@@ -196,8 +207,18 @@ if(!spoof5){
   I2C_readAnything(command2_fdbk);
   Wire.endTransmission();
 }
-
-
-  delay(1);
-
+  
 }
+
+void procSpoofs(){
+    //if needed, instead of actually sending these commands anywhere, let's just run each through a low-pass filter to simulate.
+  //this will allow us to test interfaces to the master quickly and easily.
+  
+  if(spoof1){feedback1 = feedback1+dt/tau*(cmd1-feedback1);}
+  if(spoof2){feedback5 = feedback5+dt/tau*(cmd2-feedback5);}
+  if(spoof3){feedback3 = feedback3+dt/tau*(cmd3-feedback3);}
+  if(spoof4){feedback4 = feedback4+dt/tau*(cmd4-feedback4);}
+  if(spoof5){feedback2 = feedback2+dt/tau*(cmd5-feedback2);}
+//  delayMicroseconds(10);
+}
+
