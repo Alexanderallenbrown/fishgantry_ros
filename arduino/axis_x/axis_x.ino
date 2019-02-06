@@ -9,6 +9,8 @@ float testpos = 1.2345678;
 volatile byte* posFloatPtr;
 int Address = 102;
 
+bool receiveFlag = false;
+bool sendFlag = false;
 ///// NOTE: This version homes the unit if the command is 111.10 exactly ///////
 //// ALSO: -222.20 disables the axis (enabled by default) ////
 //// ALSO: -333.30 enables the axis (enabled by default) ////
@@ -102,6 +104,18 @@ void loop() {
   noInterrupts();
   unCount = unCountShared;
   interrupts();
+
+//  if(sendFlag){
+//  //noInterrupts();
+//  I2C_writeAnything(posrad/m2rad);
+//  I2C_writeAnything(command);
+//  //interrupts();
+//  sendFlag = false;
+//  }
+//  if(receiveFlag){
+//    I2C_readAnything(command);
+//    receiveFlag = false;
+//  }
 
   //timing
   microsnow = micros();
@@ -220,18 +234,16 @@ else{
 // this function is registered as an event, see setup()
 void requestEvent()
 {
-  //noInterrupts();
   I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
-  //interrupts();
+sendFlag = true;
 }
 void receiveEvent(int howMany){
   if (howMany >= (sizeof command))
    {
-    //noInterrupts();
    I2C_readAnything (command);    
-    //interrupts();
    }  // end if have enough data
+receiveFlag = true;
 }
 
 // simple interrupt service routine

@@ -43,20 +43,20 @@ int address1 = 102;
 int address2 = 103;
 int address3 = 104;
 int address4 = 105;
-int address5 = 106;
-int address6 = 108;//needed because we have two y axis motors
+int address5 = 6;
+int address6 = 8;//needed because we have two y axis motors
 
 bool spoof1 = false;
-bool spoof2 = false;
-bool spoof3 = false;
+bool spoof2 = true;
+bool spoof3 = true;
 bool spoof4 = true;
-bool spoof5 = false;
+bool spoof5 = true;
 bool spoof6 = true;
 
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin(1);
+  Wire.begin(101);
 }
 
 void loop()
@@ -105,16 +105,17 @@ void loop()
   //this will allow us to test interfaces to the master quickly and easily.
   
   if(spoof1){feedback1 = feedback1+dt/tau*(cmd1-feedback1);}
-  if(spoof2){feedback2 = feedback2+dt/tau*(cmd2-feedback2);}
+  if(spoof2){feedback5 = feedback5+dt/tau*(cmd2-feedback5);}
   if(spoof3){feedback3 = feedback3+dt/tau*(cmd3-feedback3);}
   if(spoof4){feedback4 = feedback4+dt/tau*(cmd4-feedback4);}
-  if(spoof5){feedback5 = feedback5+dt/tau*(cmd5-feedback5);}
-  delayMicroseconds(10);
+  if(spoof5){feedback2 = feedback2+dt/tau*(cmd5-feedback2);}
+//  delayMicroseconds(10);
   //Write Command to Axis 1
   if(!spoof1){
   Wire.beginTransmission (address1);
   I2C_writeAnything (cmd1);
   Wire.endTransmission ();
+  delayMicroseconds(10);
   //now, receive feedback from Axis 1
   Wire.beginTransmission(address1);
   Wire.requestFrom(address1, sizeof(feedback1) + sizeof(cmd1));            
@@ -122,7 +123,7 @@ void loop()
   I2C_readAnything(command1_fdbk);
   Wire.endTransmission();
   }
-delayMicroseconds(10);
+//delayMicroseconds(10);
   if(!spoof2){
   //Write Command to Axis 2
   Wire.beginTransmission (address2);
@@ -135,7 +136,7 @@ delayMicroseconds(10);
   I2C_readAnything(command5_fdbk);
   Wire.endTransmission();
   }
-delayMicroseconds(10);
+//delayMicroseconds(10);
 if(!spoof3){
   //Write Command to Axis 3
   Wire.beginTransmission (address3);
@@ -149,7 +150,7 @@ if(!spoof3){
   Wire.endTransmission();
 }
 //
-delayMicroseconds(10);
+//delayMicroseconds(10);
 if(!spoof4){
   //Write Command to Axis 4, which INCLUDES THE TAIL!!
   command4vec[0] = cmd4;
@@ -167,7 +168,7 @@ I2C_writeAnything (tailcommand);
   Wire.endTransmission();
 }
 
-delayMicroseconds(10);
+//delayMicroseconds(10);
 
 
 if(!spoof6){
@@ -182,7 +183,7 @@ if(!spoof6){
   I2C_readAnything(command2_fdbk);
   Wire.endTransmission();
 }
-delayMicroseconds(10);
+//delayMicroseconds(10);
 if(!spoof5){
   //Write Command to Axis 5, which is one of the y axis motors
   Wire.beginTransmission (address5);
@@ -190,7 +191,7 @@ if(!spoof5){
   Wire.endTransmission ();
   //Receive Feedback from Axis 3
   Wire.beginTransmission(address5);
-  Wire.requestFrom(address5, sizeof(feedback5) + sizeof(cmd2));            
+  Wire.requestFrom(address5, sizeof(feedback2) + sizeof(cmd2));            
   I2C_readAnything(feedback2);
   I2C_readAnything(command2_fdbk);
   Wire.endTransmission();
