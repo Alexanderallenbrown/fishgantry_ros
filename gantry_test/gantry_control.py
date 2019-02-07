@@ -89,7 +89,7 @@ class Window():
     def __init__(self, master=None):
         #Frame.__init__(self, master)    
         self.running = False     
-        self.delay = 20 #milliseconds
+        self.delay = 50 #milliseconds
         self.refreshdelay = 100
         self.tnow = time.time()
         self.starttime =self.tnow
@@ -403,10 +403,11 @@ class Window():
         #print strcom
         self.olddisable = self.disable
         # HERE IS WHERE SERIAL GOES
+        print "sending: "+strcom
         self.ser.write(strcom)
 
         line = self.ser.readline()
-        #print line
+        print "raw received: "+ line
         #if we actually have data (sometimes the computer outruns the ARduino)
         if len(line)>0:
             #print line
@@ -420,7 +421,9 @@ class Window():
             if len(splitline)==6:
                 ardt,f1,f2,f3,f4,f5 = float(splitline[0]),float(splitline[1]),float(splitline[2]),float(splitline[3]),float(splitline[4]),float(splitline[5])
                 #if we have fewer points than the buffer size (we haven't been running for long):
-
+                print "got:     " + str(ardt)+","+str(f1)+","+str(f2)+","+str(f3)+","+str(f4)+","+str(f5)
+        else:
+            self.ser.flush()
         #get current wall time
         self.tnow = time.time()-self.starttime
         #now append each of these values to their respective vectors
@@ -535,6 +538,9 @@ class Window():
         self.amax=float(self.Eamax.get())
         #actually start the serial port
         self.ser = serial.Serial(self.port,self.baud)
+
+        time.sleep(1)
+        print "Serial opened"
         #when did we start?
         self.starttime = time.time()
         #now start the two timed loops firing

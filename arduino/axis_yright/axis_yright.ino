@@ -76,6 +76,8 @@ delayMicroseconds(1000);
   pinMode(in2pin, OUTPUT);
   pinMode(lim1pin,INPUT);
   pinMode(lim2pin,INPUT);
+  pinMode(CHANNEL_A_PIN,INPUT_PULLUP);
+  pinMode(CHANNEL_B_PIN,INPUT_PULLUP);
   //attach the interrupts
   attachInterrupt(2, channelA, CHANGE);
   attachInterrupt(3, channelB, CHANGE);

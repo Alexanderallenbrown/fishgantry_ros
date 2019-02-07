@@ -47,11 +47,11 @@ int address5 = 6;
 int address6 = 8;//needed because we have two y axis motors
 
 bool spoof1 = false;
-bool spoof2 = true;
-bool spoof3 = true;
-bool spoof4 = true;
+bool spoof2 = false;
+bool spoof3 = false;
+bool spoof4 = false;
 bool spoof5 = true;
-bool spoof6 = true;
+bool spoof6 = false;
 
 
 void setup() {
@@ -67,7 +67,6 @@ void loop()
   ftnow+=dt;
   oldt = tnow;
   //first, read the command(s) from the serial monitor
-  char myChar = '0';
 
   
   if (Serial.available())
@@ -75,6 +74,7 @@ void loop()
     char myChar = Serial.read();
     if (myChar == '!')
     {
+//      delayMicroseconds(1000);
       cmd1 = Serial.parseFloat();
       cmd2 = Serial.parseFloat();
       cmd3 = Serial.parseFloat();
@@ -90,15 +90,14 @@ void loop()
       }
 
       
-      //now send i2c as appropriate
-      sendI2C();
+      
       
       //now send feedback about what we saw
       Serial.print(ftnow,4);
       Serial.print("\t");
       Serial.print(feedback1,4);
       Serial.print("\t");
-      Serial.print(feedback2,4);
+      Serial.print(feedback6,4);
       Serial.print("\t");
       Serial.print(feedback3,4);
       Serial.print("\t");
@@ -106,9 +105,13 @@ void loop()
       Serial.print("\t");
       Serial.print(feedback5,4);
       Serial.println();
+
+      //now send i2c as appropriate
+      sendI2C();
+      
     }
     else{
-      char junk = Serial.read();
+      //char junk = Serial.read();
     }
   }
 
@@ -126,10 +129,11 @@ void sendI2C(){
   Wire.beginTransmission (address1);
   I2C_writeAnything (cmd1);
   Wire.endTransmission ();
-  delayMicroseconds(10);
+//  delayMicroseconds(10);
   //now, receive feedback from Axis 1
   Wire.beginTransmission(address1);
-  Wire.requestFrom(address1, sizeof(feedback1) + sizeof(cmd1));            
+  Wire.requestFrom(address1, sizeof(feedback1) + sizeof(cmd1)); 
+  delayMicroseconds(100);            
   I2C_readAnything(feedback1);
   I2C_readAnything(command1_fdbk);
   Wire.endTransmission();
@@ -142,7 +146,8 @@ void sendI2C(){
   Wire.endTransmission ();
   //Receive Feedback from Axis 2
   Wire.beginTransmission(address2);
-  Wire.requestFrom(address2, sizeof(feedback5) + sizeof(cmd5));            
+  Wire.requestFrom(address2, sizeof(feedback5) + sizeof(cmd5));  
+  delayMicroseconds(100);           
   I2C_readAnything(feedback5);
   I2C_readAnything(command5_fdbk);
   Wire.endTransmission();
@@ -155,7 +160,8 @@ if(!spoof3){
   Wire.endTransmission ();
   //Receive Feedback from Axis 3
   Wire.beginTransmission(address3);
-  Wire.requestFrom(address3, sizeof(feedback3) + sizeof(cmd3));            
+  Wire.requestFrom(address3, sizeof(feedback3) + sizeof(cmd3)); 
+  delayMicroseconds(100);           
   I2C_readAnything(feedback3);
   I2C_readAnything(command3_fdbk);
   Wire.endTransmission();
@@ -173,7 +179,8 @@ I2C_writeAnything (tailcommand);
   Wire.endTransmission ();
   //Receive Feedback from Axis 4
   Wire.beginTransmission(address4);
-  Wire.requestFrom(address4, sizeof(feedback4) + sizeof(cmd4));            
+  Wire.requestFrom(address4, sizeof(feedback4) + sizeof(cmd4)); 
+  delayMicroseconds(100);            
   I2C_readAnything(feedback4);
   I2C_readAnything(command4_fdbk);
   Wire.endTransmission();
@@ -189,7 +196,8 @@ if(!spoof6){
   Wire.endTransmission ();
   //Receive Feedback from Axis 3
   Wire.beginTransmission(address6);
-  Wire.requestFrom(address6, sizeof(feedback6) + sizeof(cmd2));            
+  Wire.requestFrom(address6, sizeof(feedback6) + sizeof(cmd2)); 
+  delayMicroseconds(100);            
   I2C_readAnything(feedback6);
   I2C_readAnything(command2_fdbk);
   Wire.endTransmission();
@@ -202,7 +210,8 @@ if(!spoof5){
   Wire.endTransmission ();
   //Receive Feedback from Axis 3
   Wire.beginTransmission(address5);
-  Wire.requestFrom(address5, sizeof(feedback2) + sizeof(cmd2));            
+  Wire.requestFrom(address5, sizeof(feedback2) + sizeof(cmd2));  
+  delayMicroseconds(100);           
   I2C_readAnything(feedback2);
   I2C_readAnything(command2_fdbk);
   Wire.endTransmission();

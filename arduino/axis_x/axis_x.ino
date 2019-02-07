@@ -28,7 +28,7 @@ float command = 0;
 float oldcommand = 0;
 float oldoldcommand = 0;
 float battery_voltage = 4.0;
-
+float posm = 0;
 float sinfreq = 2;
 float sinamp = PI/2;
 float sinangle = 0;
@@ -78,6 +78,8 @@ delayMicroseconds(1000);
   pinMode(in2pin, OUTPUT);
   pinMode(lim1pin,INPUT);
   pinMode(lim2pin,INPUT);
+  pinMode(CHANNEL_A_PIN,INPUT_PULLUP);
+  pinMode(CHANNEL_B_PIN,INPUT_PULLUP);
   //attach the interrupts
   attachInterrupt(2, channelA, CHANGE);
   attachInterrupt(3, channelB, CHANGE);
@@ -101,9 +103,9 @@ void loop() {
 
   //encoder read
   static long unCount;
-  noInterrupts();
+//  noInterrupts();
   unCount = unCountShared;
-  interrupts();
+//  interrupts();
 
 //  if(sendFlag){
 //  //noInterrupts();
@@ -124,6 +126,7 @@ void loop() {
   oldmicros = microsnow;
 
   posrad = (unCount * 2.0 * PI) / (cpr * 1.0);
+  posm = posrad*m2rad;
   velrads = (posrad - oldposrad) / dt;
 
 
