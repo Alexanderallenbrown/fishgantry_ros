@@ -537,7 +537,7 @@ class Window():
         self.pmax=float(self.Epmax.get())
         self.amax=float(self.Eamax.get())
         #actually start the serial port
-        self.ser = serial.Serial(self.port,self.baud)
+        self.ser = serial.Serial(self.port,self.baud,timeout=0.2,write_timeout=0.2)
 
         time.sleep(1)
         print "Serial opened"
@@ -559,6 +559,7 @@ root = Tk()
 # root.geometry("600x400")
 app = Window(root)
 root.mainloop()
+app.ser.close()
 
 
 # root = tkinter.Tk()
