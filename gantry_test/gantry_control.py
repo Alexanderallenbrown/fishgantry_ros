@@ -89,7 +89,7 @@ class Window():
     def __init__(self, master=None):
         #Frame.__init__(self, master)    
         self.running = False     
-        self.delay = 50 #milliseconds
+        self.delay = 20 #milliseconds
         self.refreshdelay = 100
         self.tnow = time.time()
         self.starttime =self.tnow
@@ -405,7 +405,7 @@ class Window():
         # HERE IS WHERE SERIAL GOES
         print "sending: "+strcom
         self.ser.write(strcom)
-
+        time.sleep(0.01)
         line = self.ser.readline()
         print "raw received: "+ line
         #if we actually have data (sometimes the computer outruns the ARduino)
@@ -537,7 +537,7 @@ class Window():
         self.pmax=float(self.Epmax.get())
         self.amax=float(self.Eamax.get())
         #actually start the serial port
-        self.ser = serial.Serial(self.port,self.baud,timeout=0.2,write_timeout=0.2)
+        self.ser = serial.Serial(self.port,self.baud)#,timeout=0.2,write_timeout=0.2)
 
         time.sleep(1)
         print "Serial opened"

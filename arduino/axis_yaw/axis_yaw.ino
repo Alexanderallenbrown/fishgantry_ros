@@ -45,7 +45,7 @@ float olde = 0;
 volatile long unCountShared = 0;
 
 
-int cpr = 64*19;
+int cpr = 64*130;
 
 float posrad = 0;
 float oldposrad = 0;

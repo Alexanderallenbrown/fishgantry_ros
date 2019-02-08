@@ -16,14 +16,16 @@ int Address = 6;
 boolean closedloop = true;
 boolean menable = true;// this is the motor enable
 
+
 //pulley radius is .01165 meters (.91/2)
 float m2rad = 1.0/.013;
 
-float kp = 50.0;
+float kp = 100.0;
 float ki = 0.0;
 float kd = 2.0;
 float command = 0;
 float oldcommand = 0;
+//float oldcommand = 0;
 float oldoldcommand = 0;
 float battery_voltage = 4.0;
 
@@ -45,7 +47,7 @@ float olde = 0;
 volatile long unCountShared = 0;
 
 
-int cpr = 64*19;
+int cpr = 64*100;
 
 float posrad = 0;
 float oldposrad = 0;
@@ -77,6 +79,8 @@ delayMicroseconds(1000);
   pinMode(lim1pin,INPUT);
   pinMode(lim2pin,INPUT);
   //attach the interrupts
+  pinMode(CHANNEL_A_PIN,INPUT_PULLUP);
+  pinMode(CHANNEL_B_PIN,INPUT_PULLUP);
   attachInterrupt(2, channelA, CHANGE);
   attachInterrupt(3, channelB, CHANGE);
 
@@ -229,7 +233,11 @@ void receiveEvent(int howMany){
   if (howMany >= (sizeof command))
    {
     //noInterrupts();
-   I2C_readAnything (command);    
+    oldcommand = command;
+   I2C_readAnything (command);
+   if(isnan(command)){
+    command=oldcommand;    
+   }
     //interrupts();
    }  // end if have enough data
 }
