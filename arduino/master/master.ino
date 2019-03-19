@@ -1,4 +1,6 @@
-#include <Wire.h>
+#include <WSWire.h>
+//#include <Wire.h>
+
 #include "i2cAnything.h"
 
 //float feedback;
@@ -49,7 +51,7 @@ int address6 = 8;//needed because we have two y axis motors
 bool spoof1 = false;
 bool spoof2 = false;
 bool spoof3 = false;
-bool spoof4 = true;
+bool spoof4 = false;
 bool spoof5 = false;
 bool spoof6 = false;
 

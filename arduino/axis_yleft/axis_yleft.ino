@@ -194,27 +194,27 @@ else{
   analogWrite(enpin,0);
 }
 
-  Serial.print(dt, 5);
-  Serial.print("\t");
-  Serial.print(V);
-  Serial.print("\t");
-  Serial.print(potval);
-  Serial.print("\t");
-  Serial.print(posrad, 5);
-
-  if(closedloop){
-  Serial.print("\t");
-  Serial.print(e, 3);
-  Serial.print("\t");
-  Serial.print(dedt, 3);
-  Serial.print("\t");
-  Serial.print(inte, 3);
-  }
-
-  Serial.print(menable);
-
-
-  Serial.println();
+//  Serial.print(dt, 5);
+//  Serial.print("\t");
+//  Serial.print(V);
+//  Serial.print("\t");
+//  Serial.print(potval);
+//  Serial.print("\t");
+//  Serial.print(posrad, 5);
+//
+//  if(closedloop){
+//  Serial.print("\t");
+//  Serial.print(e, 3);
+//  Serial.print("\t");
+//  Serial.print(dedt, 3);
+//  Serial.print("\t");
+//  Serial.print(inte, 3);
+//  }
+//
+//  Serial.print(menable);
+//
+//
+//  Serial.println();
 
   delayMicroseconds(1000);
 }

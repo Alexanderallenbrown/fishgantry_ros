@@ -26,12 +26,12 @@ from numpy import *
 
 
 class EllipticalPath():
-    def __init__(self,a=.1,b=.1,U=.05,c=0.1,maxfreq = 3*2*pi,maxamp = 45,maxspeed = 0.1):
+    def __init__(self,a=.1,b=.1,U=.05,c=0.1,maxfreq = 2*2*pi,maxamp = 1.5,maxspeed = 0.1):
         self.a,self.b,self.U,self.c,self.maxfreq,self.maxamp,self.maxspeed = a,b,U,c,maxfreq,maxamp,maxspeed
         self.theta = arange(0,2*pi,.01) #range of thetas
         self.tailtheta = 0
         self.tailangle = 0
-        self.tailfreq = self.U/self.maxspeed*self.maxfreq
+        self.tailfreq = self.maxfreq
         self.x = a*cos(self.theta)+a
         self.y = b*sin(self.theta)+b
         #for swimming up and down
@@ -40,12 +40,15 @@ class EllipticalPath():
         self.yaw = zeros(len(self.y))
         self.pitch = zeros(len(self.y))
         self.yawnow = 0
+        self.oldyaw = 0
+        self.yawrate = 0
         self.pitchnow = 0
         self.updateGeometry(a,b,U,c)
         self.laps = 0
 
     def update(self,dt,U):
         self.U = U
+        
         if(self.Snow)>self.maxS:
             self.Snow-=self.maxS
             self.laps+=1
@@ -53,11 +56,15 @@ class EllipticalPath():
         self.xnow = interp(self.Snow,self.S,self.x)
         self.ynow = interp(self.Snow,self.S,self.y)
         self.yawnow = interp(self.Snow,self.S,self.yaw)
+
+        self.yawrate = (self.yawnow-self.oldyaw)/dt
+        self.oldyaw = self.yawnow
+
         self.znow = interp(self.Snow,self.S,self.z)
         self.pitchnow = interp(self.Snow,self.S,self.pitch)
-        self.tailfreq = self.U/self.maxspeed*self.maxfreq
+        self.tailfreq = self.maxfreq
         self.tailtheta+=self.tailfreq*dt
-        self.tailangle = self.maxamp*sin(self.tailtheta)
+        self.tailangle = self.maxamp*sin(self.tailtheta) - self.maxamp*self.yawrate
         #print self.Snow,self.maxS
         return self.xnow, self.ynow,self.yawnow,self.znow,self.pitchnow,self.tailangle
 
@@ -89,7 +96,7 @@ class Window():
     def __init__(self, master=None):
         #Frame.__init__(self, master)    
         self.running = False     
-        self.delay = 20 #milliseconds
+        self.delay = 50 #milliseconds
         self.refreshdelay = 100
         self.tnow = time.time()
         self.starttime =self.tnow

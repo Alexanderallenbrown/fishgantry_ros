@@ -1,5 +1,5 @@
 #include <Servo.h>
-#include <Wire.h>
+#include <WSWire.h>
 #include "i2cAnything.h"
 // Assign your channel in pins
 #define CHANNEL_A_PIN 0
@@ -43,7 +43,7 @@ float olde = 0;
 volatile long unCountShared = 0;
 
 
-int cpr = 64*20;
+int cpr = 12*250;
 
 float posrad = 0;
 float oldposrad = 0;
@@ -62,7 +62,7 @@ void setup() {
   Wire.onRequest(requestEvent);
   Wire.onReceive(receiveEvent);
   // put your setup code here, to run once:
-  Serial.begin(115200);
+//  Serial.begin(115200);
 delayMicroseconds(1000);
   pinMode(enpin, OUTPUT);
   delayMicroseconds(1000);
@@ -144,32 +144,32 @@ void loop() {
     analogWrite(enpin, abs(V));
   }
 
-  if(servocommand>90.0){
-    servocommand = 90.0;
+  if(servocommand>180.0){
+    servocommand = 180.0;
   }
-  else if(servocommand<-90.0){
-    servocommand = -90.0;
+  else if(servocommand<0.0){
+    servocommand = 0.0;
   }
-  tailservo.write(int(servocommand)+90.0);
+  tailservo.write(int(servocommand));
+////
+//  Serial.print(dt, 5);
+//  Serial.print("\t");
+//  Serial.print(V);
+//  Serial.print("\t");
+//  Serial.print(potval);
+//  Serial.print("\t");
+//  Serial.print(posrad, 5);
+//
+//  if(closedloop){
+//  Serial.print("\t");
+//  Serial.print(e, 3);
+//  Serial.print("\t");
+//  Serial.print(dedt, 3);
+//  Serial.print("\t");
+//  Serial.print(inte, 3);
+//  }
 
-  Serial.print(dt, 5);
-  Serial.print("\t");
-  Serial.print(V);
-  Serial.print("\t");
-  Serial.print(potval);
-  Serial.print("\t");
-  Serial.print(posrad, 5);
-
-  if(closedloop){
-  Serial.print("\t");
-  Serial.print(e, 3);
-  Serial.print("\t");
-  Serial.print(dedt, 3);
-  Serial.print("\t");
-  Serial.print(inte, 3);
-  }
-
-  Serial.println();
+//  Serial.println();
 
   delayMicroseconds(1000);
 }
