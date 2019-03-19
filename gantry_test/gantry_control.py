@@ -24,6 +24,10 @@ from matplotlib.figure import Figure
 
 from numpy import *
 
+import datetime
+
+
+
 
 class EllipticalPath():
     def __init__(self,a=.1,b=.1,U=.05,c=0.1,maxfreq = 2*2*pi,maxamp = 1.5,maxspeed = 0.1):
@@ -45,6 +49,8 @@ class EllipticalPath():
         self.pitchnow = 0
         self.updateGeometry(a,b,U,c)
         self.laps = 0
+        self.f = None
+
 
     def update(self,dt,U):
         self.U = U
@@ -460,6 +466,10 @@ class Window():
         self.f4.append(f4)
         self.f5.append(f5)
         
+        #write to file
+        fstring = str(c1)+'\t'+str(f1)+'\t'+str(c2)+'\t'+str(f2)+'\t'+str(c3)+'\t'+str(f3)+'\t'+str(c4)+'\t'+str(f4)+'\t'+str(c5)+'\t'+str(f5)+'\t'+str(c6)+'\r\n'
+        self.f.write(fstring)
+
         self.tvec.append(self.tnow)
         if(self.running):
             self.loopbutton.after(self.delay,self.loop)
@@ -534,6 +544,15 @@ class Window():
                     # Fatal Python Error: PyEval_RestoreThread: NULL tstate
     def startserial(self):
         print "opening serial..."
+        now = datetime.datetime.now()
+        fname = 'Data/'+str(now.year)+'_'+str(now.month)+'_'+str(now.day)+'_'+str(now.hour)+'_'+str(now.minute)+'_'+str(now.second)+'.txt'
+        ############ NOW WE OPEN A FILE. WE WILL STORE THE RAW ARDUINO DATA TO THIS FILE FOR POST-PROCESSING IN MATLAB/ETC.#############
+        self.f = open(fname,'w')
+        notes = 'Elliptical Path'
+        self.f.write(notes)#write to file
+        formatstring = 'c1\tf1\tc2\tf2\tc3\tf3\tc4\tf4\tc5\tf5\tc6\tf6'
+
+        self.f.write(formatstring)
         self.running=True
         #pull the port and baud from the input boxes
         self.port = self.Eport.get()
@@ -556,6 +575,7 @@ class Window():
 
     def endserial(self):
         print "closing serial..."
+        self.f.close()
         self.ser.close()
         self.running=False
 
