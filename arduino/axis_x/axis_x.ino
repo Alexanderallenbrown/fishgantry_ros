@@ -141,23 +141,25 @@ void loop() {
     //filter the command position using a second order filter
     //COMMAND IS NOW READ FROM i2c MASTER!!!
     //command = newcommand;
-    
+    //Serial.println(command);
     //now compute the error
     if(command==-111.1){
       command=0;
-      homeit();
       Serial.println("Homing Command");
+      homeit();
     }
     else if(command==-222.2){
       menable = false;
-      command=posrad;
+      //command=posrad;
       Serial.println("DISABLE COMMAND");
     }
-    else if(command==-333.3){
+    else if(command<=-333){
       menable = true;
-      command=posrad;
+      //command=posrad;
       Serial.println("ENABLE COMMAND");
     }
+
+    
 
     //command is in meters, so we need to convert before computing error
     
@@ -195,12 +197,23 @@ if(menable){
   if (V < 0) {
     digitalWrite(in1pin, LOW);
     digitalWrite(in2pin, HIGH);
-    analogWrite(enpin, abs(V));
+    //prevent axis from crashing.
+    if(!digitalRead(lim1pin)){
+      analogWrite(enpin, abs(V));
+    }
+    else{
+      analogWrite(enpin,0);
+    }
   }
   else {
     digitalWrite(in1pin, HIGH);
     digitalWrite(in2pin, LOW);
-    analogWrite(enpin, abs(V));
+    if(!digitalRead(lim2pin)){
+      analogWrite(enpin, abs(V));
+    }
+    else{
+      analogWrite(enpin,0);
+    }
   }
 }
 else{
@@ -237,8 +250,9 @@ else{
 // this function is registered as an event, see setup()
 void requestEvent()
 {
-  I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
+  I2C_writeAnything(posrad/m2rad);
+  
  //sendFlag = true;
 }
 void receiveEvent(int howMany){

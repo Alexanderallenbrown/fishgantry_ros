@@ -109,6 +109,7 @@ class Window():
         self.sendHome = False
         self.disable = 0
         self.olddisable = 0
+        self.disableState = IntVar()
 
         self.master = master
         #numpy stuff
@@ -258,7 +259,7 @@ class Window():
         self.Hbutton = Button(master=self.master, text="Home", command=self.sethome)
         self.Hbutton.pack(in_=self.mside,side="top")
 
-        self.enbox = Checkbutton(self.master, text="Disable", variable=self.disable)
+        self.enbox = Checkbutton(self.master, text="Disable", variable=self.disableState)
         self.enbox.pack(in_=self.mside,side="top")
 
         #make button for activating elliptical path
@@ -393,7 +394,9 @@ class Window():
             c1,c2,c3,c4,c5,c6 = -111.1,-111.1,-111.1,-111.1,-111.1,0
             # self.sendHome = False
 
-
+        # print self.disable
+        self.disable = self.disableState.get()
+        #print self.disable
         if(self.disable==1 and self.olddisable==0):
             c1,c2,c3,c4,c5,c6 = -222.2,-222.2,-222.2,-222.2,-222.2,0
             controlcommand = True
@@ -413,14 +416,16 @@ class Window():
         else:
             strcom = '!'+"{0:.4f}".format(c1)+","+"{0:.4f}".format(c2)+","+"{0:.4f}".format(c3)+","+"{0:.4f}".format(c4)+","+"{0:.4f}".format(c5)+","+"{0:.4f}".format(c6)+'\r\n'
         
+
+
         #print strcom
         self.olddisable = self.disable
         # HERE IS WHERE SERIAL GOES
-        print "sending: "+strcom
+        #print "sending: "+strcom
         self.ser.write(strcom)
         time.sleep(0.01)
         line = self.ser.readline()
-        print "raw received: "+ line
+        #print "raw received: "+ line
         #if we actually have data (sometimes the computer outruns the ARduino)
         if len(line)>0:
             #print line
@@ -437,6 +442,11 @@ class Window():
                 print "got:     " + str(ardt)+","+str(f1)+","+str(f2)+","+str(f3)+","+str(f4)+","+str(f5)
         else:
             self.ser.flush()
+
+        #if we are disabled, reset all sliders to reflect current axis position
+        if self.disable:
+            self.sx.set(int(self.sliderscale/self.xmax*f1))
+
         #get current wall time
         self.tnow = time.time()-self.starttime
         #now append each of these values to their respective vectors
