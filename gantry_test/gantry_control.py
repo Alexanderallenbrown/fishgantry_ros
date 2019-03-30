@@ -381,6 +381,11 @@ class Window():
 
     def sethome(self):
         self.sendHome = True
+        self.sx.set(0)
+        self.sy.set(0)
+        self.sz.set(0)
+        self.sp.set(0)
+        self.sa.set(0)
 
     def loop(self):
         #do all of the things
