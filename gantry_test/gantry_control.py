@@ -446,6 +446,10 @@ class Window():
         #if we are disabled, reset all sliders to reflect current axis position
         if self.disable:
             self.sx.set(int(self.sliderscale/self.xmax*f1))
+            self.sy.set(int(self.sliderscale/self.ymax*f2))
+            self.sz.set(int(self.sliderscale/self.zmax*f3))
+            self.sp.set(int(self.sliderscale/self.pmax*f4))
+            self.sa.set(int(self.sliderscale/self.amax*f5))
 
         #get current wall time
         self.tnow = time.time()-self.starttime

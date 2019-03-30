@@ -150,12 +150,12 @@ void loop() {
     }
     else if(command==-222.2){
       menable = false;
-      //command=posrad;
+      command=posrad;
       Serial.println("DISABLE COMMAND");
     }
     else if(command<=-333){
       menable = true;
-      //command=posrad;
+      command=posrad;
       Serial.println("ENABLE COMMAND");
     }
 

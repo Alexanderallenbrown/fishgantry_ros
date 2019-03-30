@@ -138,7 +138,7 @@ void loop() {
       command=posrad;
       Serial.println("DISABLE COMMAND");
     }
-    else if(command==-333.3){
+    else if(command<=-333.3){
       menable = true;
       command=posrad;
       Serial.println("ENABLE COMMAND");
@@ -180,12 +180,23 @@ if(menable){
   if (V < 0) {
     digitalWrite(in1pin, LOW);
     digitalWrite(in2pin, HIGH);
-    analogWrite(enpin, abs(V));
+    //prevent axis from crashing.
+    if(!digitalRead(lim1pin)){
+      analogWrite(enpin, abs(V));
+    }
+    else{
+      analogWrite(enpin,0);
+    }
   }
   else {
     digitalWrite(in1pin, HIGH);
     digitalWrite(in2pin, LOW);
-    analogWrite(enpin, abs(V));
+    if(!digitalRead(lim2pin)){
+      analogWrite(enpin, abs(V));
+    }
+    else{
+      analogWrite(enpin,0);
+    }
   }
 }
 else{
@@ -223,8 +234,8 @@ else{
 void requestEvent()
 {
   //noInterrupts();
-  I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
+  I2C_writeAnything(posrad/m2rad);
   //interrupts();
 }
 void receiveEvent(int howMany){
