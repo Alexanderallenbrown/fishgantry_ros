@@ -138,7 +138,7 @@ void loop() {
       command=posrad;
       Serial.println("DISABLE COMMAND");
     }
-    else if(command==-333.3){
+    else if(command<=-333.3){
       menable = true;
       command=posrad;
       Serial.println("ENABLE COMMAND");
@@ -223,8 +223,8 @@ else{
 void requestEvent()
 {
   //noInterrupts();
-  I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
+  I2C_writeAnything(posrad/m2rad);
   //interrupts();
 }
 void receiveEvent(int howMany){

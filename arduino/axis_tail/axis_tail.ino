@@ -180,8 +180,8 @@ void loop() {
 void requestEvent()
 {
   //noInterrupts();
-  I2C_writeAnything(posrad);
   I2C_writeAnything(command);
+  I2C_writeAnything(posrad);
   //interrupts();
 }
 void receiveEvent(int howMany){

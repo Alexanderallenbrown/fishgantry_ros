@@ -232,8 +232,8 @@ else{
 void requestEvent()
 {
   //noInterrupts();
-  I2C_writeAnything(posrad/m2rad);
   I2C_writeAnything(command);
+  I2C_writeAnything(posrad/m2rad);
   //interrupts();
 }
 void receiveEvent(int howMany){
