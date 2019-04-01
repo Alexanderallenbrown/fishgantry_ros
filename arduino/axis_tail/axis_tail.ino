@@ -14,6 +14,7 @@ Servo tailservo;
 float servocommand = 0.0;
 
 boolean closedloop = true;
+boolean menable = true;
 
 float kp = 50.0;
 float ki = 0.0;
@@ -53,6 +54,9 @@ int in1pin = 4;
 int in2pin = 5;
 int enpin = 6;
 
+int lim1pin = 10;
+int lim2pin = 8;
+
 int potval;
 float fV;
 int V;
@@ -75,6 +79,19 @@ delayMicroseconds(1000);
   tailservo.attach(11);
 
 }
+
+void homeit(){
+    Serial.print("HOMING...");
+  //limit lim1 is pin 10, limit lim2 is pin 8.
+  //home the axis
+  while(digitalRead(lim1pin)==LOW){
+    digitalWrite(in1pin, LOW);
+    digitalWrite(in2pin, HIGH);
+    analogWrite(enpin, 50);
+  }
+  
+  unCountShared=0;
+  }
 
 void loop() {
 
@@ -100,6 +117,23 @@ void loop() {
 
   //now compute the voltage command
   if (closedloop) {
+
+     //now compute the error
+    if(command==-111.1){
+      command=0;
+      homeit();
+      Serial.println("Homing Command");
+    }
+    else if(command==-222.2){
+      menable = false;
+      command=posrad;
+      Serial.println("DISABLE COMMAND");
+    }
+    else if(command<=-333.3){
+      menable = true;
+      command=posrad;
+      Serial.println("ENABLE COMMAND");
+    }
     
     //now compute the error
     e = command - posrad;
@@ -133,16 +167,33 @@ void loop() {
 
 
 
+if(menable){
   if (V < 0) {
+    
     digitalWrite(in1pin, LOW);
     digitalWrite(in2pin, HIGH);
-    analogWrite(enpin, abs(V));
+    if(!digitalRead(lim1pin)){
+      analogWrite(enpin, abs(V));
+    }
+      else{
+        analogWrite(enpin,0);
+      }
   }
   else {
     digitalWrite(in1pin, HIGH);
     digitalWrite(in2pin, LOW);
+    if(!digitalRead(lim2pin)){
     analogWrite(enpin, abs(V));
+    }
+    else{
+      analogWrite(enpin,0);
+    }
   }
+}
+else{
+  analogWrite(enpin,0);
+}
+
 
   if(servocommand>180.0){
     servocommand = 180.0;
