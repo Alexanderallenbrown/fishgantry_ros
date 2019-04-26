@@ -328,7 +328,7 @@ class PersistentFish():
         # tail+dt*self.Uuff
         self.zpos = 0.
         self.pitchnow = 0.
-        self.tailfreq = self.maxfreq
+        self.tailfreq = 2*self.maxfreq*self.U/self.mu_u
         self.tailtheta+=self.tailfreq*dt
         self.tailangle = self.maxamp*sin(self.tailtheta) - self.maxamp*self.yawrate
         
@@ -344,6 +344,7 @@ class PersistentFish():
 #        print(str(self.phi)+'\n')
 
         # return self.Omega,self.U,self.xpos,self.ypos,self.phi,self.S
+        print self.U
         return self.xpos,self.ypos,self.zpos,self.pitch,self.phi,self.tailangle
 
 
