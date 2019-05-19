@@ -306,13 +306,8 @@ class PersistentFish():
         # Determine relative positions S, phi
         self.S = S + self.U*dt
         self.phi = phi + self.Omega*dt
-        if abs(self.phi)>=2*math.pi:
-            # Keep yaw within 0 to 2pi
-            if self.phi < 0:
-                self.phi += 2*math.pi
-            if self.phi > 0:
-                self.phi -= 2*math.pi
-        
+        #
+        self.laps=self.phi%(2*math.pi)
         # # Use these to transform to local coordinates
         # if ((self.xpos<.01) or (self.xpos>(self.bound_X-.01))):
         #     self.xpos = self.xpos
@@ -486,7 +481,9 @@ class Window():
 
         Tp=StringVar()
         Tp.set("pitch command")
-        self.sp = Scale(self.master,from_=0,to=self.sliderscale,orient=HORIZONTAL,length=200)
+        self.yawmin = 0
+        self.yawmax = 2*math.pi 
+        self.sp = Scale(self.master,from_=self.yawmin,to=self.sliderscale,orient=HORIZONTAL,length=200)
         self.sp.pack(in_=self.lside,side="top")
         Lp=Label(self.master, textvariable=Tp, height=1)
         Lp.pack(in_=self.lside,side="top")
@@ -625,11 +622,12 @@ class Window():
         #if path is active, update the x and y commands
         #x,y,yaw,z,pitch,tail = self.path.update(self.delay/1000.0,self.sU.get()/1000.0)
         x,y,z,pitch,yaw,tail = self.path.drivePersistentFish(self.delay/1000.0)
+        
         #print(x,y,yaw)
         #now set the x and y sliders accordingly
         self.sx.set(x*self.sliderscale/self.xmax)
         self.sy.set(y*self.sliderscale/self.ymax)
-        self.sa.set(yaw*self.sliderscale/self.amax)
+        self.sa.set((yaw-self.yawmin)*self.sliderscale/self.amax)
         self.sz.set(z*self.sliderscale/self.zmax)
         self.st.set(tail*self.sliderscale/90.0)
         self.sp.set(pitch*self.sliderscale/self.pmax)
